@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireOrganizationId } from "@/server/auth/session";
 import { getCustomer } from "@/server/customers/service";
+import { listCustomerTimeline } from "@/server/customers/timeline-service";
 import { listTags } from "@/server/tags/service";
 import { notFound } from "next/navigation";
 import { CustomerEditForm } from "./customer-edit-form";
@@ -38,7 +39,7 @@ export default async function CustomerDetailPage({
 }: CustomerDetailPageProps) {
   const organizationId = await requireOrganizationId();
   const { id } = await params;
-  const [customer, tagResult] = await Promise.all([
+  const [customer, tagResult, timeline] = await Promise.all([
     getCustomer({
       customerId: BigInt(id),
       organizationId
@@ -46,6 +47,10 @@ export default async function CustomerDetailPage({
     listTags({
       organizationId,
       pageSize: 100
+    }),
+    listCustomerTimeline({
+      customerId: BigInt(id),
+      organizationId
     })
   ]);
 
@@ -97,9 +102,43 @@ export default async function CustomerDetailPage({
             <CardTitle>활동 타임라인</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="rounded-md border border-dashed border-[var(--border)] bg-[var(--surface-subtle)] px-4 py-8 text-center text-sm text-slate-600">
-              상담, 예약, 후속관리 이력은 다음 단계에서 연결됩니다.
-            </p>
+            {timeline.length === 0 ? (
+              <p className="rounded-md border border-dashed border-[var(--border)] bg-[var(--surface-subtle)] px-4 py-8 text-center text-sm text-slate-600">
+                아직 연결된 상담, 예약, 후속관리 이력이 없습니다.
+              </p>
+            ) : (
+              <ol className="space-y-3">
+                {timeline.map((item) => (
+                  <li
+                    className="rounded-md border border-[var(--border)] bg-white px-4 py-3"
+                    key={item.id}
+                  >
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                      <div>
+                        <Badge variant={timelineVariantByType[item.type]}>
+                          {timelineTypeLabels[item.type]}
+                        </Badge>
+                        <div className="mt-2 font-semibold text-slate-950">
+                          {item.title}
+                        </div>
+                        {item.description ? (
+                          <div className="mt-1 text-sm text-slate-600">
+                            {item.description}
+                          </div>
+                        ) : null}
+                      </div>
+                      <div className="shrink-0 text-xs font-medium text-slate-500">
+                        {formatTimelineDate(item.occurredAt)}
+                      </div>
+                    </div>
+                    <div className="mt-2 text-xs text-slate-500">
+                      상태 {item.status}
+                      {item.userName ? ` · 담당 ${item.userName}` : ""}
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            )}
           </CardContent>
         </Card>
       </section>
@@ -116,6 +155,26 @@ export default async function CustomerDetailPage({
       </Card>
     </div>
   );
+}
+
+const timelineTypeLabels = {
+  consultation: "상담",
+  reservation: "예약",
+  followUp: "후속관리"
+};
+
+const timelineVariantByType = {
+  consultation: "default",
+  reservation: "info",
+  followUp: "warning"
+} as const;
+
+function formatTimelineDate(value: string) {
+  return new Intl.DateTimeFormat("ko-KR", {
+    dateStyle: "short",
+    timeStyle: "short",
+    timeZone: "Asia/Seoul"
+  }).format(new Date(value));
 }
 
 function Info({ label, value }: { label: string; value?: string | null }) {

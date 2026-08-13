@@ -124,6 +124,10 @@ test("authenticated owner can create a consultation for a customer", async ({ pa
 
   await expect(page).toHaveURL(/\/consultations\?customerId=\d+/);
   await expect(page.getByText(consultationContent)).toBeVisible();
+
+  await page.goto(page.url().replace(/\/consultations\?customerId=(\d+)/, "/customers/$1"));
+  await expect(page.getByRole("heading", { name: customerName })).toBeVisible();
+  await expect(page.getByText(consultationContent).first()).toBeVisible();
 });
 
 test("authenticated owner can create a reservation for a customer", async ({ page }) => {
@@ -155,6 +159,10 @@ test("authenticated owner can create a reservation for a customer", async ({ pag
 
   await expect(page).toHaveURL(/\/reservations\?customerId=\d+/);
   await expect(page.getByText(reservationTitle)).toBeVisible();
+
+  await page.goto(page.url().replace(/\/reservations\?customerId=(\d+)/, "/customers/$1"));
+  await expect(page.getByRole("heading", { name: customerName })).toBeVisible();
+  await expect(page.getByText(reservationTitle).first()).toBeVisible();
 });
 
 test("authenticated owner can create a follow-up for a customer", async ({ page }) => {
@@ -184,6 +192,10 @@ test("authenticated owner can create a follow-up for a customer", async ({ page 
 
   await expect(page).toHaveURL(/\/follow-ups\?customerId=\d+/);
   await expect(page.getByText(followUpTitle)).toBeVisible();
+
+  await page.goto(page.url().replace(/\/follow-ups\?customerId=(\d+)/, "/customers/$1"));
+  await expect(page.getByRole("heading", { name: customerName })).toBeVisible();
+  await expect(page.getByText(followUpTitle).first()).toBeVisible();
 });
 
 test("authenticated owner can create a tag and assign it to a customer", async ({ page }) => {
