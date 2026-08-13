@@ -96,3 +96,32 @@ test("authenticated owner can update and soft delete a customer", async ({ page 
   await expect(page).toHaveURL(/\/customers$/);
   await expect(page.getByText(updatedName)).not.toBeVisible();
 });
+
+test("authenticated owner can create a consultation for a customer", async ({ page }) => {
+  const customerName = `E2E 상담 ${Date.now()}`;
+  const consultationContent = "설치 가능 시간 문의";
+
+  await page.goto("/login");
+  await page.getByLabel("이메일").fill("owner@example.com");
+  await page.getByLabel("비밀번호").fill("customerflow-demo-password");
+  await page.getByRole("button", { name: "로그인" }).click();
+  await expect(page).toHaveURL(/\/dashboard/);
+
+  await page.goto("/customers/new");
+  await page.getByLabel("고객명").fill(customerName);
+  await page.getByLabel("전화번호", { exact: true }).fill("010-7777-0000");
+  await page.getByRole("button", { name: "저장" }).click();
+  await expect(page).toHaveURL(/\/customers\/\d+/);
+
+  await page.goto("/consultations/new");
+  await page.locator('select[name="customerId"]').selectOption({
+    label: `${customerName} / 010-7777-0000`
+  });
+  await page.getByLabel("상담 내용").fill(consultationContent);
+  await page.getByLabel("상담 결과").fill("토요일 오후 가능 안내");
+  await page.getByLabel("다음 액션").fill("예약 확정 연락");
+  await page.getByRole("button", { name: "저장" }).click();
+
+  await expect(page).toHaveURL(/\/consultations\?customerId=\d+/);
+  await expect(page.getByText(consultationContent)).toBeVisible();
+});
