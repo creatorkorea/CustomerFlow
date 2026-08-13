@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { auth } from "@/lib/auth";
 
-export default auth((request) => {
+export const proxy = auth((request) => {
   if (!request.auth) {
     const loginUrl = new URL("/login", request.nextUrl);
     loginUrl.searchParams.set("callbackUrl", request.nextUrl.pathname);
@@ -14,5 +14,13 @@ export default auth((request) => {
 });
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/customers/:path*", "/consultations/:path*", "/reservations/:path*", "/follow-ups/:path*", "/notifications/:path*", "/settings/:path*"]
+  matcher: [
+    "/dashboard/:path*",
+    "/customers/:path*",
+    "/consultations/:path*",
+    "/reservations/:path*",
+    "/follow-ups/:path*",
+    "/notifications/:path*",
+    "/settings/:path*"
+  ]
 };

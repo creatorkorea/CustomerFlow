@@ -1,22 +1,16 @@
 import bcrypt from "bcrypt";
-import { z } from "zod";
 
 import { prisma } from "@/lib/db";
+import {
+  registerFormSchema
+} from "@/server/auth/validation";
 import { failure, success } from "@/server/shared/api-response";
 import { toApiError } from "@/server/shared/http-errors";
-
-const registerSchema = z.object({
-  organizationName: z.string().trim().min(1, "사업장명을 입력해주세요."),
-  businessNumber: z.string().trim().max(30).optional(),
-  name: z.string().trim().min(1, "이름을 입력해주세요."),
-  email: z.string().trim().email("올바른 이메일을 입력해주세요."),
-  password: z.string().min(8, "비밀번호는 8자 이상이어야 합니다.")
-});
 
 export async function POST(request: Request) {
   try {
     const json = await request.json();
-    const parsed = registerSchema.safeParse(json);
+    const parsed = registerFormSchema.safeParse(json);
 
     if (!parsed.success) {
       return failure("VALIDATION_ERROR", "입력값을 확인해주세요.", 400);
@@ -36,7 +30,7 @@ export async function POST(request: Request) {
       const organization = await tx.organization.create({
         data: {
           name: parsed.data.organizationName,
-          businessNumber: parsed.data.businessNumber || null,
+          businessNumber: parsed.data.businessNumber,
           email: parsed.data.email,
           users: {
             create: {

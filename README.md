@@ -71,3 +71,20 @@ MVP의 목표는 기능 수가 아니라 첫 유료 고객이 실제로 매일 �
 `고객 -> 상담 -> 예약 -> 후속관리` 흐름을 가장 먼저 완성한다.
 
 AI, 결제, 외부 연동은 제품 흐름이 검증된 뒤 P2로 진행한다.
+
+## 로컬 실행
+
+1. `.env.local`을 만들고 Supabase pooler PostgreSQL URL을 `DATABASE_URL`에 설정한다.
+   - 비밀번호에 `$`, `#`, `/` 같은 특수문자가 있으면 URL 인코딩한다.
+   - 예: `postgresql://postgres.<project-ref>:<url-encoded-password>@aws-0-ap-southeast-1.pooler.supabase.com:5432/postgres`
+2. `AUTH_SECRET`, `AUTH_URL`, `NEXTAUTH_URL`을 설정한다.
+3. 스키마와 시드 데이터를 반영한다.
+
+```bash
+npm run prisma:generate
+npx prisma db push
+npm run prisma:seed
+npm run dev
+```
+
+개발용 시드 계정은 `owner@example.com` / `customerflow-demo-password`이다.

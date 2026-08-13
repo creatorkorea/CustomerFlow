@@ -2,6 +2,7 @@ import { Bell, Plus, Search } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { logoutAction } from "@/server/auth/actions";
 
 type AppHeaderProps = {
   userName?: string | null;
@@ -31,6 +32,11 @@ export function AppHeader({ userName }: AppHeaderProps) {
       <div className="hidden min-w-20 text-right text-sm font-medium text-slate-700 sm:block">
         {userName ?? "사용자"}
       </div>
+      <form action={logoutAction}>
+        <Button size="sm" type="submit" variant="ghost">
+          로그아웃
+        </Button>
+      </form>
     </header>
   );
 }
