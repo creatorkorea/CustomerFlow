@@ -228,3 +228,24 @@ test("authenticated owner can create a tag and assign it to a customer", async (
   await expect(page.getByRole("heading", { name: customerName })).toBeVisible();
   await expect(page.getByText(tagName).first()).toBeVisible();
 });
+
+test("authenticated owner can update business settings", async ({ page }) => {
+  const organizationName = `CustomerFlow E2E ${Date.now()}`;
+
+  await page.goto("/login");
+  await page.getByLabel("이메일").fill("owner@example.com");
+  await page.getByLabel("비밀번호").fill("customerflow-demo-password");
+  await page.getByRole("button", { name: "로그인" }).click();
+  await expect(page).toHaveURL(/\/dashboard/);
+
+  await page.goto("/settings/business");
+  await expect(page.getByRole("heading", { name: "사업장 설정" })).toBeVisible();
+
+  await page.getByLabel("사업장명").fill(organizationName);
+  await page.getByLabel("대표 이메일").fill("owner@example.com");
+  await page.getByLabel("대표 전화").fill("02-1234-5678");
+  await page.getByRole("button", { name: "저장" }).click();
+
+  await expect(page.getByText("사업장 설정을 저장했습니다.")).toBeVisible();
+  await expect(page.getByLabel("사업장명")).toHaveValue(organizationName);
+});
