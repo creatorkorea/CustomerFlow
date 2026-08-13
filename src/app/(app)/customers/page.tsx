@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { requireOrganizationId } from "@/server/auth/session";
 import { listCustomers } from "@/server/customers/service";
 import { listCustomersSchema } from "@/server/customers/validation";
+import { listTags } from "@/server/tags/service";
 
 const statusLabels = {
   new: "신규",
@@ -42,11 +43,16 @@ export default async function CustomersPage({
   const params = await searchParams;
   const parsed = listCustomersSchema.parse({
     search: firstParam(params.search),
-    status: firstParam(params.status)
+    status: firstParam(params.status),
+    tagId: firstParam(params.tagId)
   });
   const { customers, total } = await listCustomers({
     organizationId,
     ...parsed
+  });
+  const { tags } = await listTags({
+    organizationId,
+    pageSize: 100
   });
 
   return (
@@ -98,7 +104,7 @@ export default async function CustomersPage({
             <div>
               <div className="text-xs font-semibold text-slate-500">검색어</div>
               <div className="mt-1 text-2xl font-bold text-slate-950">
-                {parsed.search ? "적용" : "없음"}
+                {parsed.search || parsed.tagId ? "적용" : "없음"}
               </div>
             </div>
             <Badge variant="info">검색</Badge>
@@ -129,6 +135,18 @@ export default async function CustomersPage({
           {Object.entries(statusLabels).map(([value, label]) => (
             <option key={value} value={value}>
               {label}
+            </option>
+          ))}
+        </select>
+        <select
+          className="form-select w-full sm:w-44"
+          defaultValue={parsed.tagId ?? ""}
+          name="tagId"
+        >
+          <option value="">전체 태그</option>
+          {tags.map((tag) => (
+            <option key={tag.id} value={tag.id}>
+              {tag.name}
             </option>
           ))}
         </select>

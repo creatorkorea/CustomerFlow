@@ -6,7 +6,8 @@ vi.mock("@/lib/db", () => ({
       count: vi.fn(),
       create: vi.fn(),
       findFirst: vi.fn(),
-      findMany: vi.fn()
+      findMany: vi.fn(),
+      findUnique: vi.fn()
     },
     customer: {
       findFirst: vi.fn()
@@ -101,6 +102,30 @@ describe("follow-up service", () => {
 
     vi.mocked(prisma.customer.findFirst).mockResolvedValueOnce({
       id: 21n
+    } as never);
+    vi.mocked(prisma.followUp.findUnique).mockResolvedValueOnce({
+      id: 101n,
+      organizationId: 7n,
+      customerId: 21n,
+      consultationId: null,
+      userId: 3n,
+      title: "예약 전 확인 연락",
+      memo: "방문 가능 여부 재확인",
+      dueAt: new Date("2026-08-15T01:00:00.000Z"),
+      status: "pending",
+      completedAt: null,
+      createdAt: new Date("2026-08-13T00:00:00.000Z"),
+      updatedAt: new Date("2026-08-13T00:00:00.000Z"),
+      customer: {
+        id: 21n,
+        name: "김철수",
+        phone: "010-1111-1111"
+      },
+      consultation: null,
+      user: {
+        id: 3n,
+        name: "홍길동"
+      }
     } as never);
     vi.mocked(prisma.$transaction).mockImplementationOnce(async (callback) =>
       callback({
@@ -216,10 +241,35 @@ describe("follow-up service", () => {
       }
     });
     const activityCreate = vi.fn();
+    const notificationCreate = vi.fn();
 
     vi.mocked(prisma.followUp.findFirst).mockResolvedValueOnce({
       id: 101n,
       customerId: 21n
+    } as never);
+    vi.mocked(prisma.followUp.findUnique).mockResolvedValueOnce({
+      id: 101n,
+      organizationId: 7n,
+      customerId: 21n,
+      consultationId: null,
+      userId: 3n,
+      title: "예약 전 확인 연락",
+      memo: null,
+      dueAt: new Date("2026-08-15T01:00:00.000Z"),
+      status: "completed",
+      completedAt: new Date("2026-08-13T01:00:00.000Z"),
+      createdAt: new Date("2026-08-13T00:00:00.000Z"),
+      updatedAt: new Date("2026-08-13T01:00:00.000Z"),
+      customer: {
+        id: 21n,
+        name: "김철수",
+        phone: "010-1111-1111"
+      },
+      consultation: null,
+      user: {
+        id: 3n,
+        name: "홍길동"
+      }
     } as never);
     vi.mocked(prisma.$transaction).mockImplementationOnce(async (callback) =>
       callback({
@@ -228,6 +278,9 @@ describe("follow-up service", () => {
         },
         activityLog: {
           create: activityCreate
+        },
+        notification: {
+          create: notificationCreate
         }
       } as never)
     );
@@ -279,6 +332,16 @@ describe("follow-up service", () => {
         })
       })
     );
+    expect(notificationCreate).toHaveBeenCalledWith({
+      data: {
+        organizationId: 7n,
+        userId: 3n,
+        type: "follow_up",
+        title: "후속관리 상태 변경",
+        message: "예약 전 확인 연락: completed",
+        linkUrl: "/follow-ups?customerId=21"
+      }
+    });
     expect(result).toMatchObject({
       id: "101",
       status: "completed",

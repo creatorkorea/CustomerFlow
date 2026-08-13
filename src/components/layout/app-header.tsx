@@ -5,10 +5,14 @@ import { Input } from "@/components/ui/input";
 import { logoutAction } from "@/server/auth/actions";
 
 type AppHeaderProps = {
+  unreadNotificationCount?: number;
   userName?: string | null;
 };
 
-export function AppHeader({ userName }: AppHeaderProps) {
+export function AppHeader({
+  unreadNotificationCount = 0,
+  userName
+}: AppHeaderProps) {
   const initials = (userName?.slice(0, 1) || "U").toUpperCase();
 
   return (
@@ -27,8 +31,13 @@ export function AppHeader({ userName }: AppHeaderProps) {
       <Button aria-label="도움말" className="hidden sm:inline-flex" size="icon" variant="ghost">
         <HelpCircle aria-hidden="true" className="h-4 w-4" />
       </Button>
-      <Button aria-label="알림" size="icon" variant="outline">
+      <Button aria-label="알림" className="relative" size="icon" variant="outline">
         <Bell aria-hidden="true" className="h-4 w-4" />
+        {unreadNotificationCount > 0 ? (
+          <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-rose-600 px-1 text-[10px] font-bold leading-none text-white">
+            {unreadNotificationCount > 9 ? "9+" : unreadNotificationCount}
+          </span>
+        ) : null}
       </Button>
       <div className="hidden items-center gap-3 rounded-md border border-[var(--border)] bg-white px-2 py-1 sm:flex">
         <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-800 text-xs font-bold text-white">

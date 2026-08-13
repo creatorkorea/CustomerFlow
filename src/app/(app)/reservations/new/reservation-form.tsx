@@ -13,6 +13,7 @@ type ReservationFormProps = {
     name: string;
     phone: string | null;
   }>;
+  defaultCustomerId?: string;
 };
 
 const statusOptions = [
@@ -23,7 +24,10 @@ const statusOptions = [
   ["no_show", "노쇼"]
 ] as const;
 
-export function ReservationForm({ customers }: ReservationFormProps) {
+export function ReservationForm({
+  customers,
+  defaultCustomerId
+}: ReservationFormProps) {
   const [state, formAction, isPending] = useActionState(
     createReservationAction,
     initialReservationActionState
@@ -38,7 +42,12 @@ export function ReservationForm({ customers }: ReservationFormProps) {
       ) : null}
       <label className="space-y-2">
         <span className="text-sm font-semibold text-slate-700">고객</span>
-        <select className="form-select w-full" name="customerId" required>
+        <select
+          className="form-select w-full"
+          defaultValue={defaultCustomerId ?? ""}
+          name="customerId"
+          required
+        >
           <option value="">고객 선택</option>
           {customers.map((customer) => (
             <option key={customer.id} value={customer.id}>

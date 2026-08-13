@@ -39,24 +39,23 @@ export default async function CustomerDetailPage({
 }: CustomerDetailPageProps) {
   const organizationId = await requireOrganizationId();
   const { id } = await params;
-  const [customer, tagResult, timeline] = await Promise.all([
-    getCustomer({
-      customerId: BigInt(id),
-      organizationId
-    }).catch(() => null),
-    listTags({
-      organizationId,
-      pageSize: 100
-    }),
-    listCustomerTimeline({
-      customerId: BigInt(id),
-      organizationId
-    })
-  ]);
+  const customer = await getCustomer({
+    customerId: BigInt(id),
+    organizationId
+  }).catch(() => null);
 
   if (!customer) {
     notFound();
   }
+
+  const tagResult = await listTags({
+    organizationId,
+    pageSize: 100
+  });
+  const timeline = await listCustomerTimeline({
+    customerId: BigInt(id),
+    organizationId
+  });
 
   return (
     <div className="space-y-6">

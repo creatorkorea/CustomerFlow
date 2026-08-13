@@ -88,6 +88,7 @@ export async function listCustomers({
   organizationId,
   search,
   status,
+  tagId,
   page = 1,
   pageSize = 20
 }: ListCustomersParams) {
@@ -95,6 +96,18 @@ export async function listCustomers({
     organizationId,
     deletedAt: null,
     ...(status ? { status } : {}),
+    ...(tagId
+      ? {
+          tags: {
+            some: {
+              tagId: BigInt(tagId),
+              tag: {
+                organizationId
+              }
+            }
+          }
+        }
+      : {}),
     ...(search
       ? {
           OR: [
@@ -106,22 +119,20 @@ export async function listCustomers({
       : {})
   };
 
-  const [total, customers] = await Promise.all([
-    prisma.customer.count({ where }),
-    prisma.customer.findMany({
-      where,
-      include: {
-        tags: {
-          include: {
-            tag: true
-          }
+  const total = await prisma.customer.count({ where });
+  const customers = await prisma.customer.findMany({
+    where,
+    include: {
+      tags: {
+        include: {
+          tag: true
         }
-      },
-      orderBy: [{ updatedAt: "desc" }, { id: "desc" }],
-      skip: (page - 1) * pageSize,
-      take: pageSize
-    })
-  ]);
+      }
+    },
+    orderBy: [{ updatedAt: "desc" }, { id: "desc" }],
+    skip: (page - 1) * pageSize,
+    take: pageSize
+  });
 
   return {
     customers: customers.map(serializeCustomer),
@@ -180,25 +191,27 @@ export async function createCustomer({
       }
     });
 
-    return tx.customer.findUnique({
-      where: {
-        id: created.id
-      },
-      include: {
-        tags: {
-          include: {
-            tag: true
-          }
-        }
-      }
-    });
+    return created;
   });
 
-  if (!customer) {
+  const customerWithTags = await prisma.customer.findUnique({
+    where: {
+      id: customer.id
+    },
+    include: {
+      tags: {
+        include: {
+          tag: true
+        }
+      }
+    }
+  });
+
+  if (!customerWithTags) {
     throw new AppError("NOT_FOUND", "고객을 찾을 수 없습니다.", 404);
   }
 
-  return serializeCustomer(customer);
+  return serializeCustomer(customerWithTags);
 }
 
 async function ensureCustomerExists({
@@ -312,25 +325,27 @@ export async function updateCustomer({
       }
     });
 
-    return tx.customer.findUnique({
-      where: {
-        id: updated.id
-      },
-      include: {
-        tags: {
-          include: {
-            tag: true
-          }
-        }
-      }
-    });
+    return updated;
   });
 
-  if (!customer) {
+  const customerWithTags = await prisma.customer.findUnique({
+    where: {
+      id: customer.id
+    },
+    include: {
+      tags: {
+        include: {
+          tag: true
+        }
+      }
+    }
+  });
+
+  if (!customerWithTags) {
     throw new AppError("NOT_FOUND", "고객을 찾을 수 없습니다.", 404);
   }
 
-  return serializeCustomer(customer);
+  return serializeCustomer(customerWithTags);
 }
 
 export async function deleteCustomer({

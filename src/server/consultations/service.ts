@@ -96,30 +96,28 @@ export async function listConsultations({
     ...(channel ? { channel } : {})
   };
 
-  const [total, consultations] = await Promise.all([
-    prisma.consultation.count({ where }),
-    prisma.consultation.findMany({
-      where,
-      include: {
-        customer: {
-          select: {
-            id: true,
-            name: true,
-            phone: true
-          }
-        },
-        user: {
-          select: {
-            id: true,
-            name: true
-          }
+  const total = await prisma.consultation.count({ where });
+  const consultations = await prisma.consultation.findMany({
+    where,
+    include: {
+      customer: {
+        select: {
+          id: true,
+          name: true,
+          phone: true
         }
       },
-      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-      skip: (page - 1) * pageSize,
-      take: pageSize
-    })
-  ]);
+      user: {
+        select: {
+          id: true,
+          name: true
+        }
+      }
+    },
+    orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+    skip: (page - 1) * pageSize,
+    take: pageSize
+  });
 
   return {
     consultations: consultations.map((consultation) =>
@@ -157,21 +155,6 @@ export async function createConsultation({
         result: input.result,
         nextAction: input.nextAction,
         followUpAt: input.followUpAt ? new Date(input.followUpAt) : undefined
-      },
-      include: {
-        customer: {
-          select: {
-            id: true,
-            name: true,
-            phone: true
-          }
-        },
-        user: {
-          select: {
-            id: true,
-            name: true
-          }
-        }
       }
     });
 
@@ -180,7 +163,8 @@ export async function createConsultation({
         id: customerId
       },
       data: {
-        lastContactedAt: created.createdAt
+        lastContactedAt: created.createdAt,
+        status: "consulting"
       }
     });
 
@@ -201,5 +185,32 @@ export async function createConsultation({
     return created;
   });
 
-  return serializeConsultation(consultation as ConsultationWithRelations);
+  const consultationWithRelations = await prisma.consultation.findUnique({
+    where: {
+      id: consultation.id
+    },
+    include: {
+      customer: {
+        select: {
+          id: true,
+          name: true,
+          phone: true
+        }
+      },
+      user: {
+        select: {
+          id: true,
+          name: true
+        }
+      }
+    }
+  });
+
+  if (!consultationWithRelations) {
+    throw new AppError("NOT_FOUND", "상담을 찾을 수 없습니다.", 404);
+  }
+
+  return serializeConsultation(
+    consultationWithRelations as ConsultationWithRelations
+  );
 }

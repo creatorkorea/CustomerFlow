@@ -15,6 +15,12 @@ vi.mock("@/lib/db", () => ({
     },
     consultation: {
       count: vi.fn()
+    },
+    notification: {
+      count: vi.fn()
+    },
+    activityLog: {
+      findMany: vi.fn()
     }
   }
 }));
@@ -32,8 +38,10 @@ describe("dashboard service", () => {
     vi.mocked(prisma.customer.count).mockResolvedValueOnce(3);
     vi.mocked(prisma.followUp.count).mockResolvedValueOnce(4);
     vi.mocked(prisma.consultation.count).mockResolvedValueOnce(5);
+    vi.mocked(prisma.notification.count).mockResolvedValueOnce(6);
     vi.mocked(prisma.reservation.findMany).mockResolvedValueOnce([]);
     vi.mocked(prisma.followUp.findMany).mockResolvedValueOnce([]);
+    vi.mocked(prisma.activityLog.findMany).mockResolvedValueOnce([]);
 
     const result = await getDashboardOverview({
       organizationId: 7n,
@@ -85,15 +93,17 @@ describe("dashboard service", () => {
       todayReservations: 2,
       newCustomers: 3,
       pendingFollowUps: 4,
-      openConsultations: 5
+      openConsultations: 5,
+      unreadNotifications: 6
     });
   });
 
-  it("returns upcoming reservation and pending follow-up queues with serialized dates", async () => {
+  it("returns operational queues with serialized dates", async () => {
     vi.mocked(prisma.reservation.count).mockResolvedValueOnce(0);
     vi.mocked(prisma.customer.count).mockResolvedValueOnce(0);
     vi.mocked(prisma.followUp.count).mockResolvedValueOnce(0);
     vi.mocked(prisma.consultation.count).mockResolvedValueOnce(0);
+    vi.mocked(prisma.notification.count).mockResolvedValueOnce(0);
     vi.mocked(prisma.reservation.findMany).mockResolvedValueOnce([
       {
         id: 71n,
@@ -118,6 +128,18 @@ describe("dashboard service", () => {
         customer: {
           name: "이영희",
           phone: null
+        }
+      }
+    ] as never);
+    vi.mocked(prisma.activityLog.findMany).mockResolvedValueOnce([
+      {
+        id: 201n,
+        entityType: "CUSTOMER",
+        entityId: 21n,
+        action: "CUSTOMER_CREATED",
+        createdAt: new Date("2026-08-13T08:00:00.000Z"),
+        user: {
+          name: "홍길동"
         }
       }
     ] as never);
@@ -148,6 +170,16 @@ describe("dashboard service", () => {
         title: "예약 전 확인 연락",
         dueAt: "2026-08-13T07:00:00.000Z",
         status: "pending"
+      }
+    ]);
+    expect(result.recentActivities).toEqual([
+      {
+        id: "201",
+        entityType: "CUSTOMER",
+        entityId: "21",
+        action: "CUSTOMER_CREATED",
+        userName: "홍길동",
+        createdAt: "2026-08-13T08:00:00.000Z"
       }
     ]);
   });

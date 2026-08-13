@@ -134,36 +134,34 @@ export async function listFollowUps({
       : {})
   };
 
-  const [total, followUps] = await Promise.all([
-    prisma.followUp.count({ where }),
-    prisma.followUp.findMany({
-      where,
-      include: {
-        customer: {
-          select: {
-            id: true,
-            name: true,
-            phone: true
-          }
-        },
-        consultation: {
-          select: {
-            id: true,
-            content: true
-          }
-        },
-        user: {
-          select: {
-            id: true,
-            name: true
-          }
+  const total = await prisma.followUp.count({ where });
+  const followUps = await prisma.followUp.findMany({
+    where,
+    include: {
+      customer: {
+        select: {
+          id: true,
+          name: true,
+          phone: true
         }
       },
-      orderBy: [{ dueAt: "asc" }, { id: "desc" }],
-      skip: (page - 1) * pageSize,
-      take: pageSize
-    })
-  ]);
+      consultation: {
+        select: {
+          id: true,
+          content: true
+        }
+      },
+      user: {
+        select: {
+          id: true,
+          name: true
+        }
+      }
+    },
+    orderBy: [{ dueAt: "asc" }, { id: "desc" }],
+    skip: (page - 1) * pageSize,
+    take: pageSize
+  });
 
   return {
     followUps: followUps.map((followUp) =>
@@ -211,27 +209,6 @@ export async function createFollowUp({
         dueAt: new Date(input.dueAt),
         status: input.status,
         completedAt: input.status === "completed" ? new Date() : undefined
-      },
-      include: {
-        customer: {
-          select: {
-            id: true,
-            name: true,
-            phone: true
-          }
-        },
-        consultation: {
-          select: {
-            id: true,
-            content: true
-          }
-        },
-        user: {
-          select: {
-            id: true,
-            name: true
-          }
-        }
       }
     });
 
@@ -266,7 +243,38 @@ export async function createFollowUp({
     return created;
   });
 
-  return serializeFollowUp(followUp as FollowUpWithRelations);
+  const followUpWithRelations = await prisma.followUp.findUnique({
+    where: {
+      id: followUp.id
+    },
+    include: {
+      customer: {
+        select: {
+          id: true,
+          name: true,
+          phone: true
+        }
+      },
+      consultation: {
+        select: {
+          id: true,
+          content: true
+        }
+      },
+      user: {
+        select: {
+          id: true,
+          name: true
+        }
+      }
+    }
+  });
+
+  if (!followUpWithRelations) {
+    throw new AppError("NOT_FOUND", "후속관리를 찾을 수 없습니다.", 404);
+  }
+
+  return serializeFollowUp(followUpWithRelations as FollowUpWithRelations);
 }
 
 export async function updateFollowUpStatus({
@@ -306,27 +314,6 @@ export async function updateFollowUpStatus({
       data: {
         status: input.status,
         completedAt
-      },
-      include: {
-        customer: {
-          select: {
-            id: true,
-            name: true,
-            phone: true
-          }
-        },
-        consultation: {
-          select: {
-            id: true,
-            content: true
-          }
-        },
-        user: {
-          select: {
-            id: true,
-            name: true
-          }
-        }
       }
     });
 
@@ -345,8 +332,52 @@ export async function updateFollowUpStatus({
       }
     });
 
+    if (userId) {
+      await tx.notification.create({
+        data: {
+          organizationId,
+          userId,
+          type: "follow_up",
+          title: "후속관리 상태 변경",
+          message: `${updated.title}: ${input.status}`,
+          linkUrl: `/follow-ups?customerId=${existing.customerId.toString()}`
+        }
+      });
+    }
+
     return updated;
   });
 
-  return serializeFollowUp(followUp as FollowUpWithRelations);
+  const followUpWithRelations = await prisma.followUp.findUnique({
+    where: {
+      id: followUp.id
+    },
+    include: {
+      customer: {
+        select: {
+          id: true,
+          name: true,
+          phone: true
+        }
+      },
+      consultation: {
+        select: {
+          id: true,
+          content: true
+        }
+      },
+      user: {
+        select: {
+          id: true,
+          name: true
+        }
+      }
+    }
+  });
+
+  if (!followUpWithRelations) {
+    throw new AppError("NOT_FOUND", "후속관리를 찾을 수 없습니다.", 404);
+  }
+
+  return serializeFollowUp(followUpWithRelations as FollowUpWithRelations);
 }

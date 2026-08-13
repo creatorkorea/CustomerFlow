@@ -5,6 +5,7 @@ vi.mock("@/lib/db", () => ({
     consultation: {
       count: vi.fn(),
       create: vi.fn(),
+      findUnique: vi.fn(),
       findMany: vi.fn()
     },
     customer: {
@@ -87,9 +88,35 @@ describe("consultation service", () => {
     });
   });
 
-  it("creates a consultation for a customer in the current organization and updates last contact", async () => {
+  it("creates a consultation for a customer in the current organization and marks the customer consulting", async () => {
+    const customerUpdate = vi.fn();
+
     vi.mocked(prisma.customer.findFirst).mockResolvedValueOnce({
       id: 21n
+    } as never);
+    vi.mocked(prisma.consultation.findUnique).mockResolvedValueOnce({
+      id: 61n,
+      organizationId: 7n,
+      customerId: 21n,
+      userId: 3n,
+      channel: "phone",
+      type: "inquiry",
+      status: "consulting",
+      content: "설치 가능 시간 문의",
+      result: "토요일 오후 가능 안내",
+      nextAction: "예약 확정 연락",
+      followUpAt: null,
+      createdAt: new Date("2026-08-13T00:00:00.000Z"),
+      updatedAt: new Date("2026-08-13T00:00:00.000Z"),
+      customer: {
+        id: 21n,
+        name: "김철수",
+        phone: "010-1111-1111"
+      },
+      user: {
+        id: 3n,
+        name: "홍길동"
+      }
     } as never);
     vi.mocked(prisma.$transaction).mockImplementationOnce(async (callback) =>
       callback({
@@ -120,7 +147,7 @@ describe("consultation service", () => {
           })
         },
         customer: {
-          update: vi.fn()
+          update: customerUpdate
         },
         activityLog: {
           create: vi.fn()
@@ -150,6 +177,15 @@ describe("consultation service", () => {
       },
       select: {
         id: true
+      }
+    });
+    expect(customerUpdate).toHaveBeenCalledWith({
+      where: {
+        id: 21n
+      },
+      data: {
+        lastContactedAt: new Date("2026-08-13T00:00:00.000Z"),
+        status: "consulting"
       }
     });
     expect(result).toMatchObject({

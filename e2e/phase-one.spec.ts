@@ -1,5 +1,110 @@
 import { expect, test } from "@playwright/test";
 
+import { prisma } from "../src/lib/db";
+
+const e2eRunPrefix = `E2E ${Date.now()}`;
+
+function e2eName(label: string) {
+  return `${e2eRunPrefix} ${label} ${Date.now()}`;
+}
+
+test.afterAll(async () => {
+  const e2eCustomers = await prisma.customer.findMany({
+    where: {
+      name: {
+        startsWith: e2eRunPrefix
+      }
+    },
+    select: {
+      id: true,
+      organizationId: true
+    }
+  });
+  const e2eCustomerIds = e2eCustomers.map((customer) => customer.id);
+  const e2eOrganizationIds = [
+    ...new Set(e2eCustomers.map((customer) => customer.organizationId))
+  ];
+
+  if (e2eCustomerIds.length > 0) {
+    await prisma.customerTag.deleteMany({
+      where: {
+        customerId: {
+          in: e2eCustomerIds
+        }
+      }
+    });
+    await prisma.followUp.deleteMany({
+      where: {
+        customerId: {
+          in: e2eCustomerIds
+        }
+      }
+    });
+    await prisma.reservation.deleteMany({
+      where: {
+        customerId: {
+          in: e2eCustomerIds
+        }
+      }
+    });
+    await prisma.consultation.deleteMany({
+      where: {
+        customerId: {
+          in: e2eCustomerIds
+        }
+      }
+    });
+    await prisma.customer.deleteMany({
+      where: {
+        id: {
+          in: e2eCustomerIds
+        }
+      }
+    });
+  }
+
+  await prisma.tag.deleteMany({
+    where: {
+      name: {
+        startsWith: e2eRunPrefix
+      }
+    }
+  });
+  await prisma.notification.deleteMany({
+    where: {
+      OR: [
+        {
+          title: {
+            startsWith: e2eRunPrefix
+          }
+        },
+        {
+          message: {
+            startsWith: e2eRunPrefix
+          }
+        }
+      ]
+    }
+  });
+
+  if (e2eOrganizationIds.length > 0) {
+    await prisma.organization.updateMany({
+      where: {
+        id: {
+          in: e2eOrganizationIds
+        }
+      },
+      data: {
+        name: "CustomerFlow Demo",
+        phone: "02-0000-0000",
+        email: "owner@example.com"
+      }
+    });
+  }
+
+  await prisma.$disconnect();
+});
+
 test("login page renders", async ({ page }) => {
   await page.goto("/login");
 
@@ -54,7 +159,7 @@ test("seed owner can log in and see the dashboard shell", async ({ page }) => {
 });
 
 test("authenticated owner can create a customer", async ({ page }) => {
-  const customerName = `E2E 고객 ${Date.now()}`;
+  const customerName = e2eName("고객");
 
   await page.goto("/login");
   await page.getByLabel("이메일").fill("owner@example.com");
@@ -73,7 +178,7 @@ test("authenticated owner can create a customer", async ({ page }) => {
 });
 
 test("authenticated owner can update and soft delete a customer", async ({ page }) => {
-  const customerName = `E2E 수정 ${Date.now()}`;
+  const customerName = e2eName("수정");
   const updatedName = `${customerName} 완료`;
 
   await page.goto("/login");
@@ -98,7 +203,7 @@ test("authenticated owner can update and soft delete a customer", async ({ page 
 });
 
 test("authenticated owner can create a consultation for a customer", async ({ page }) => {
-  const customerName = `E2E 상담 ${Date.now()}`;
+  const customerName = e2eName("상담");
   const consultationContent = "설치 가능 시간 문의";
 
   await page.goto("/login");
@@ -124,6 +229,8 @@ test("authenticated owner can create a consultation for a customer", async ({ pa
 
   await expect(page).toHaveURL(/\/consultations\?customerId=\d+/);
   await expect(page.getByText(consultationContent)).toBeVisible();
+  await expect(page.getByRole("link", { name: "예약 생성" }).first()).toBeVisible();
+  await expect(page.getByRole("link", { name: "후속관리 생성" }).first()).toBeVisible();
 
   await page.goto(page.url().replace(/\/consultations\?customerId=(\d+)/, "/customers/$1"));
   await expect(page.getByRole("heading", { name: customerName })).toBeVisible();
@@ -131,8 +238,8 @@ test("authenticated owner can create a consultation for a customer", async ({ pa
 });
 
 test("authenticated owner can create a reservation for a customer", async ({ page }) => {
-  const customerName = `E2E 예약 ${Date.now()}`;
-  const reservationTitle = "방문 설치 예약";
+  const customerName = e2eName("예약");
+  const reservationTitle = e2eName("방문 설치 예약");
 
   await page.goto("/login");
   await page.getByLabel("이메일").fill("owner@example.com");
@@ -170,8 +277,8 @@ test("authenticated owner can create a reservation for a customer", async ({ pag
 });
 
 test("authenticated owner can create a follow-up for a customer", async ({ page }) => {
-  const customerName = `E2E 후속 ${Date.now()}`;
-  const followUpTitle = "예약 전 확인 연락";
+  const customerName = e2eName("후속");
+  const followUpTitle = e2eName("예약 전 확인 연락");
 
   await page.goto("/login");
   await page.getByLabel("이메일").fill("owner@example.com");
@@ -211,8 +318,8 @@ test("authenticated owner can create a follow-up for a customer", async ({ page 
 });
 
 test("authenticated owner can create a tag and assign it to a customer", async ({ page }) => {
-  const tagName = `E2E 태그 ${Date.now()}`;
-  const customerName = `E2E 태그고객 ${Date.now()}`;
+  const tagName = e2eName("태그");
+  const customerName = e2eName("태그고객");
 
   await page.goto("/login");
   await page.getByLabel("이메일").fill("owner@example.com");
@@ -238,7 +345,7 @@ test("authenticated owner can create a tag and assign it to a customer", async (
 });
 
 test("authenticated owner can update business settings", async ({ page }) => {
-  const organizationName = `CustomerFlow E2E ${Date.now()}`;
+  const organizationName = `${e2eRunPrefix} 사업장`;
 
   await page.goto("/login");
   await page.getByLabel("이메일").fill("owner@example.com");

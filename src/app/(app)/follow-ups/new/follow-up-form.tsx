@@ -13,6 +13,8 @@ type FollowUpFormProps = {
     name: string;
     phone: string | null;
   }>;
+  defaultConsultationId?: string;
+  defaultCustomerId?: string;
 };
 
 const statusOptions = [
@@ -21,7 +23,11 @@ const statusOptions = [
   ["cancelled", "취소"]
 ] as const;
 
-export function FollowUpForm({ customers }: FollowUpFormProps) {
+export function FollowUpForm({
+  customers,
+  defaultConsultationId,
+  defaultCustomerId
+}: FollowUpFormProps) {
   const [state, formAction, isPending] = useActionState(
     createFollowUpAction,
     initialFollowUpActionState
@@ -36,7 +42,12 @@ export function FollowUpForm({ customers }: FollowUpFormProps) {
       ) : null}
       <label className="space-y-2">
         <span className="text-sm font-semibold text-slate-700">고객</span>
-        <select className="form-select w-full" name="customerId" required>
+        <select
+          className="form-select w-full"
+          defaultValue={defaultCustomerId ?? ""}
+          name="customerId"
+          required
+        >
           <option value="">고객 선택</option>
           {customers.map((customer) => (
             <option key={customer.id} value={customer.id}>
@@ -81,6 +92,7 @@ export function FollowUpForm({ customers }: FollowUpFormProps) {
         <input
           className="flex h-10 w-full rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm text-slate-950 outline-none transition-colors placeholder:text-[var(--muted-foreground)] focus-visible:border-[var(--ring)] focus-visible:ring-4 focus-visible:ring-teal-500/10"
           inputMode="numeric"
+          defaultValue={defaultConsultationId ?? ""}
           name="consultationId"
           placeholder="선택 입력"
         />

@@ -7,8 +7,21 @@ import { requireOrganizationId } from "@/server/auth/session";
 import { listCustomers } from "@/server/customers/service";
 import { FollowUpForm } from "./follow-up-form";
 
-export default async function NewFollowUpPage() {
+type NewFollowUpPageProps = {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+};
+
+function firstParam(value: string | string[] | undefined) {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+export default async function NewFollowUpPage({
+  searchParams
+}: NewFollowUpPageProps) {
   const organizationId = await requireOrganizationId();
+  const params = await searchParams;
+  const defaultConsultationId = firstParam(params.consultationId);
+  const defaultCustomerId = firstParam(params.customerId);
   const { customers } = await listCustomers({
     organizationId,
     pageSize: 100
@@ -45,7 +58,11 @@ export default async function NewFollowUpPage() {
               먼저 고객을 등록한 뒤 후속관리를 만들 수 있습니다.
             </div>
           ) : (
-            <FollowUpForm customers={customers} />
+            <FollowUpForm
+              customers={customers}
+              defaultConsultationId={defaultConsultationId}
+              defaultCustomerId={defaultCustomerId}
+            />
           )}
         </CardContent>
       </Card>

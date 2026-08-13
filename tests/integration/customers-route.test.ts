@@ -25,14 +25,15 @@ describe("/api/customers", () => {
     });
 
     const response = await GET(
-      new Request("http://localhost/api/customers?search=%EA%B9%80")
+      new Request("http://localhost/api/customers?search=%EA%B9%80&tagId=101")
     );
 
     expect(response.status).toBe(200);
     expect(listCustomers).toHaveBeenCalledWith(
       expect.objectContaining({
         organizationId: 7n,
-        search: "김"
+        search: "김",
+        tagId: "101"
       })
     );
   });

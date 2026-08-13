@@ -4,6 +4,7 @@ import {
   CalendarDays,
   ClipboardList,
   MessageSquareText,
+  Bell,
   Plus,
   Users
 } from "lucide-react";
@@ -51,6 +52,11 @@ export default async function DashboardPage() {
       label: "미완료 상담",
       value: overview.metrics.openConsultations.toString(),
       icon: MessageSquareText
+    },
+    {
+      label: "미확인 알림",
+      value: overview.metrics.unreadNotifications.toString(),
+      icon: Bell
     }
   ];
 
@@ -83,7 +89,7 @@ export default async function DashboardPage() {
           </Link>
         </div>
       </div>
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
         {stats.map((stat) => {
           const Icon = stat.icon;
 
@@ -103,7 +109,7 @@ export default async function DashboardPage() {
           );
         })}
       </section>
-      <section className="grid gap-4 lg:grid-cols-[1fr_360px]">
+      <section className="grid gap-4 xl:grid-cols-[1fr_360px_360px]">
         <Card>
           <CardHeader>
             <CardTitle>오늘의 일정</CardTitle>
@@ -165,6 +171,39 @@ export default async function DashboardPage() {
                       {followUp.customerName} · 마감 {formatTime(followUp.dueAt)}
                     </div>
                   </Link>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>최근 활동</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {overview.recentActivities.length === 0 ? (
+              <p className="rounded-md border border-dashed border-[var(--border)] bg-[var(--surface-subtle)] px-4 py-8 text-center text-sm text-slate-600">
+                아직 표시할 활동이 없습니다.
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {overview.recentActivities.map((activity) => (
+                  <div
+                    className="rounded-md border border-[var(--border)] bg-white px-3 py-3"
+                    key={activity.id}
+                  >
+                    <div className="text-sm font-semibold text-slate-950">
+                      {activity.action}
+                    </div>
+                    <div className="mt-1 text-xs text-slate-500">
+                      {activity.userName ?? "시스템"} ·{" "}
+                      {new Intl.DateTimeFormat("ko-KR", {
+                        dateStyle: "short",
+                        timeStyle: "short",
+                        timeZone: "Asia/Seoul"
+                      }).format(new Date(activity.createdAt))}
+                    </div>
+                  </div>
                 ))}
               </div>
             )}

@@ -38,6 +38,7 @@ export const updateCustomerSchema = createCustomerSchema.partial().refine(
 export const listCustomersSchema = z.object({
   search: optionalText,
   status: customerStatusSchema.optional(),
+  tagId: z.string().trim().regex(/^\d+$/).optional(),
   page: z.coerce.number().int().min(1).default(1),
   pageSize: z.coerce.number().int().min(1).max(100).default(20)
 });

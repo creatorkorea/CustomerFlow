@@ -15,6 +15,7 @@ vi.mock("@/lib/db", () => ({
 import { prisma } from "@/lib/db";
 import {
   listNotifications,
+  getUnreadNotificationCount,
   markAllNotificationsRead,
   markNotificationRead
 } from "@/server/notifications/service";
@@ -140,5 +141,23 @@ describe("notification service", () => {
       }
     });
     expect(result).toEqual({ count: 2 });
+  });
+
+  it("counts unread notifications for the current organization and user", async () => {
+    vi.mocked(prisma.notification.count).mockResolvedValueOnce(4);
+
+    const result = await getUnreadNotificationCount({
+      organizationId: 7n,
+      userId: 3n
+    });
+
+    expect(prisma.notification.count).toHaveBeenCalledWith({
+      where: {
+        organizationId: 7n,
+        userId: 3n,
+        readAt: null
+      }
+    });
+    expect(result).toBe(4);
   });
 });

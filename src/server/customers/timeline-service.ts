@@ -94,76 +94,74 @@ export async function listCustomerTimeline({
   organizationId,
   customerId
 }: ListCustomerTimelineParams) {
-  const [consultations, reservations, followUps] = await Promise.all([
-    prisma.consultation.findMany({
-      where: {
-        organizationId,
-        customerId,
-        deletedAt: null
-      },
-      select: {
-        id: true,
-        channel: true,
-        status: true,
-        content: true,
-        result: true,
-        nextAction: true,
-        createdAt: true,
-        user: {
-          select: {
-            name: true
-          }
+  const consultations = await prisma.consultation.findMany({
+    where: {
+      organizationId,
+      customerId,
+      deletedAt: null
+    },
+    select: {
+      id: true,
+      channel: true,
+      status: true,
+      content: true,
+      result: true,
+      nextAction: true,
+      createdAt: true,
+      user: {
+        select: {
+          name: true
         }
-      },
-      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-      take: 20
-    }),
-    prisma.reservation.findMany({
-      where: {
-        organizationId,
-        customerId,
-        deletedAt: null
-      },
-      select: {
-        id: true,
-        title: true,
-        status: true,
-        startAt: true,
-        endAt: true,
-        location: true,
-        createdAt: true,
-        user: {
-          select: {
-            name: true
-          }
+      }
+    },
+    orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+    take: 20
+  });
+  const reservations = await prisma.reservation.findMany({
+    where: {
+      organizationId,
+      customerId,
+      deletedAt: null
+    },
+    select: {
+      id: true,
+      title: true,
+      status: true,
+      startAt: true,
+      endAt: true,
+      location: true,
+      createdAt: true,
+      user: {
+        select: {
+          name: true
         }
-      },
-      orderBy: [{ startAt: "desc" }, { id: "desc" }],
-      take: 20
-    }),
-    prisma.followUp.findMany({
-      where: {
-        organizationId,
-        customerId,
-        deletedAt: null
-      },
-      select: {
-        id: true,
-        title: true,
-        status: true,
-        dueAt: true,
-        completedAt: true,
-        createdAt: true,
-        user: {
-          select: {
-            name: true
-          }
+      }
+    },
+    orderBy: [{ startAt: "desc" }, { id: "desc" }],
+    take: 20
+  });
+  const followUps = await prisma.followUp.findMany({
+    where: {
+      organizationId,
+      customerId,
+      deletedAt: null
+    },
+    select: {
+      id: true,
+      title: true,
+      status: true,
+      dueAt: true,
+      completedAt: true,
+      createdAt: true,
+      user: {
+        select: {
+          name: true
         }
-      },
-      orderBy: [{ dueAt: "desc" }, { id: "desc" }],
-      take: 20
-    })
-  ]);
+      }
+    },
+    orderBy: [{ dueAt: "desc" }, { id: "desc" }],
+    take: 20
+  });
 
   return [
     ...consultations.map((consultation) =>

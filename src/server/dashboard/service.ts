@@ -30,6 +30,17 @@ type PendingFollowUp = {
   };
 };
 
+type RecentActivity = {
+  id: bigint;
+  entityType: string;
+  entityId: bigint | null;
+  action: string;
+  createdAt: Date;
+  user: {
+    name: string;
+  } | null;
+};
+
 function getKstDayRange(now: Date) {
   const kstOffsetMs = 9 * 60 * 60 * 1000;
   const kstNow = new Date(now.getTime() + kstOffsetMs);
@@ -70,57 +81,66 @@ function serializeFollowUp(followUp: PendingFollowUp) {
   };
 }
 
+function serializeActivity(activity: RecentActivity) {
+  return {
+    id: activity.id.toString(),
+    entityType: activity.entityType,
+    entityId: activity.entityId?.toString() ?? null,
+    action: activity.action,
+    userName: activity.user?.name ?? null,
+    createdAt: activity.createdAt.toISOString()
+  };
+}
+
 export async function getDashboardOverview({
   organizationId,
   now = new Date()
 }: DashboardOverviewParams) {
   const todayRange = getKstDayRange(now);
 
-  const [
-    todayReservations,
-    newCustomers,
-    pendingFollowUps,
-    openConsultations,
-    reservationQueue,
-    followUpQueue
-  ] = await Promise.all([
-    prisma.reservation.count({
-      where: {
-        organizationId,
-        deletedAt: null,
-        status: {
-          in: ["scheduled", "in_progress"]
-        },
-        startAt: todayRange
+  const todayReservations = await prisma.reservation.count({
+    where: {
+      organizationId,
+      deletedAt: null,
+      status: {
+        in: ["scheduled", "in_progress"]
+      },
+      startAt: todayRange
+    }
+  });
+  const newCustomers = await prisma.customer.count({
+    where: {
+      organizationId,
+      deletedAt: null,
+      createdAt: todayRange
+    }
+  });
+  const pendingFollowUps = await prisma.followUp.count({
+    where: {
+      organizationId,
+      deletedAt: null,
+      status: "pending",
+      dueAt: {
+        lt: todayRange.lt
       }
-    }),
-    prisma.customer.count({
-      where: {
-        organizationId,
-        deletedAt: null,
-        createdAt: todayRange
+    }
+  });
+  const openConsultations = await prisma.consultation.count({
+    where: {
+      organizationId,
+      deletedAt: null,
+      status: {
+        in: ["new", "consulting", "quote", "reserved", "on_hold"]
       }
-    }),
-    prisma.followUp.count({
-      where: {
-        organizationId,
-        deletedAt: null,
-        status: "pending",
-        dueAt: {
-          lt: todayRange.lt
-        }
-      }
-    }),
-    prisma.consultation.count({
-      where: {
-        organizationId,
-        deletedAt: null,
-        status: {
-          in: ["new", "consulting", "quote", "reserved", "on_hold"]
-        }
-      }
-    }),
-    prisma.reservation.findMany({
+    }
+  });
+  const unreadNotifications = await prisma.notification.count({
+    where: {
+      organizationId,
+      readAt: null
+    }
+  });
+  const reservationQueue = await prisma.reservation.findMany({
       where: {
         organizationId,
         deletedAt: null,
@@ -139,41 +159,58 @@ export async function getDashboardOverview({
       },
       orderBy: [{ startAt: "asc" }, { id: "desc" }],
       take: 5
-    }),
-    prisma.followUp.findMany({
-      where: {
-        organizationId,
-        deletedAt: null,
-        status: "pending",
-        dueAt: {
-          lt: todayRange.lt
+    });
+  const followUpQueue = await prisma.followUp.findMany({
+    where: {
+      organizationId,
+      deletedAt: null,
+      status: "pending",
+      dueAt: {
+        lt: todayRange.lt
+      }
+    },
+    include: {
+      customer: {
+        select: {
+          name: true,
+          phone: true
         }
-      },
-      include: {
-        customer: {
-          select: {
-            name: true,
-            phone: true
-          }
+      }
+    },
+    orderBy: [{ dueAt: "asc" }, { id: "desc" }],
+    take: 5
+  });
+  const recentActivities = await prisma.activityLog.findMany({
+    where: {
+      organizationId
+    },
+    include: {
+      user: {
+        select: {
+          name: true
         }
-      },
-      orderBy: [{ dueAt: "asc" }, { id: "desc" }],
-      take: 5
-    })
-  ]);
+      }
+    },
+    orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+    take: 6
+  });
 
   return {
     metrics: {
       todayReservations,
       newCustomers,
       pendingFollowUps,
-      openConsultations
+      openConsultations,
+      unreadNotifications
     },
     todayReservations: reservationQueue.map((reservation) =>
       serializeReservation(reservation as TodayReservation)
     ),
     pendingFollowUps: followUpQueue.map((followUp) =>
       serializeFollowUp(followUp as PendingFollowUp)
+    ),
+    recentActivities: recentActivities.map((activity) =>
+      serializeActivity(activity as RecentActivity)
     )
   };
 }

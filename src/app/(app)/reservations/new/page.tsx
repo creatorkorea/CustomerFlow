@@ -7,8 +7,20 @@ import { requireOrganizationId } from "@/server/auth/session";
 import { listCustomers } from "@/server/customers/service";
 import { ReservationForm } from "./reservation-form";
 
-export default async function NewReservationPage() {
+type NewReservationPageProps = {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+};
+
+function firstParam(value: string | string[] | undefined) {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+export default async function NewReservationPage({
+  searchParams
+}: NewReservationPageProps) {
   const organizationId = await requireOrganizationId();
+  const params = await searchParams;
+  const defaultCustomerId = firstParam(params.customerId);
   const { customers } = await listCustomers({
     organizationId,
     pageSize: 100
@@ -45,7 +57,10 @@ export default async function NewReservationPage() {
               먼저 고객을 등록한 뒤 예약을 만들 수 있습니다.
             </div>
           ) : (
-            <ReservationForm customers={customers} />
+            <ReservationForm
+              customers={customers}
+              defaultCustomerId={defaultCustomerId}
+            />
           )}
         </CardContent>
       </Card>

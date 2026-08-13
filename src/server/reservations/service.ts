@@ -103,30 +103,28 @@ export async function listReservations({
       : {})
   };
 
-  const [total, reservations] = await Promise.all([
-    prisma.reservation.count({ where }),
-    prisma.reservation.findMany({
-      where,
-      include: {
-        customer: {
-          select: {
-            id: true,
-            name: true,
-            phone: true
-          }
-        },
-        user: {
-          select: {
-            id: true,
-            name: true
-          }
+  const total = await prisma.reservation.count({ where });
+  const reservations = await prisma.reservation.findMany({
+    where,
+    include: {
+      customer: {
+        select: {
+          id: true,
+          name: true,
+          phone: true
         }
       },
-      orderBy: [{ startAt: "asc" }, { id: "desc" }],
-      skip: (page - 1) * pageSize,
-      take: pageSize
-    })
-  ]);
+      user: {
+        select: {
+          id: true,
+          name: true
+        }
+      }
+    },
+    orderBy: [{ startAt: "asc" }, { id: "desc" }],
+    skip: (page - 1) * pageSize,
+    take: pageSize
+  });
 
   return {
     reservations: reservations.map((reservation) =>
@@ -163,21 +161,6 @@ export async function createReservation({
         location: input.location,
         memo: input.memo,
         status: input.status
-      },
-      include: {
-        customer: {
-          select: {
-            id: true,
-            name: true,
-            phone: true
-          }
-        },
-        user: {
-          select: {
-            id: true,
-            name: true
-          }
-        }
       }
     });
 
@@ -206,10 +189,50 @@ export async function createReservation({
       }
     });
 
+    if (userId) {
+      await tx.notification.create({
+        data: {
+          organizationId,
+          userId,
+          type: "reservation",
+          title: "예약 등록",
+          message: input.title,
+          linkUrl: `/reservations?customerId=${customerId.toString()}`
+        }
+      });
+    }
+
     return created;
   });
 
-  return serializeReservation(reservation as ReservationWithRelations);
+  const reservationWithRelations = await prisma.reservation.findUnique({
+    where: {
+      id: reservation.id
+    },
+    include: {
+      customer: {
+        select: {
+          id: true,
+          name: true,
+          phone: true
+        }
+      },
+      user: {
+        select: {
+          id: true,
+          name: true
+        }
+      }
+    }
+  });
+
+  if (!reservationWithRelations) {
+    throw new AppError("NOT_FOUND", "예약을 찾을 수 없습니다.", 404);
+  }
+
+  return serializeReservation(
+    reservationWithRelations as ReservationWithRelations
+  );
 }
 
 function customerStatusForReservationStatus(
@@ -262,21 +285,6 @@ export async function updateReservationStatus({
       },
       data: {
         status: input.status
-      },
-      include: {
-        customer: {
-          select: {
-            id: true,
-            name: true,
-            phone: true
-          }
-        },
-        user: {
-          select: {
-            id: true,
-            name: true
-          }
-        }
       }
     });
 
@@ -306,8 +314,48 @@ export async function updateReservationStatus({
       }
     });
 
+    if (userId) {
+      await tx.notification.create({
+        data: {
+          organizationId,
+          userId,
+          type: "reservation",
+          title: "예약 상태 변경",
+          message: `${updated.title}: ${input.status}`,
+          linkUrl: `/reservations?customerId=${existing.customerId.toString()}`
+        }
+      });
+    }
+
     return updated;
   });
 
-  return serializeReservation(reservation as ReservationWithRelations);
+  const reservationWithRelations = await prisma.reservation.findUnique({
+    where: {
+      id: reservation.id
+    },
+    include: {
+      customer: {
+        select: {
+          id: true,
+          name: true,
+          phone: true
+        }
+      },
+      user: {
+        select: {
+          id: true,
+          name: true
+        }
+      }
+    }
+  });
+
+  if (!reservationWithRelations) {
+    throw new AppError("NOT_FOUND", "예약을 찾을 수 없습니다.", 404);
+  }
+
+  return serializeReservation(
+    reservationWithRelations as ReservationWithRelations
+  );
 }

@@ -180,6 +180,7 @@ export default async function ConsultationsPage({
                     <th className="px-4 py-3">상담 내용</th>
                     <th className="px-4 py-3">다음 액션</th>
                     <th className="px-4 py-3">등록일</th>
+                    <th className="px-4 py-3">연결</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[var(--border)]">
@@ -215,6 +216,22 @@ export default async function ConsultationsPage({
                           dateStyle: "short",
                           timeZone: "Asia/Seoul"
                         }).format(new Date(consultation.createdAt))}
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex flex-wrap gap-2">
+                          <Link
+                            className="inline-flex h-9 items-center justify-center rounded-md border border-[var(--border)] bg-white px-3 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
+                            href={`/reservations/new?customerId=${consultation.customerId}`}
+                          >
+                            예약 생성
+                          </Link>
+                          <Link
+                            className="inline-flex h-9 items-center justify-center rounded-md border border-[var(--border)] bg-white px-3 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
+                            href={`/follow-ups/new?customerId=${consultation.customerId}&consultationId=${consultation.id}`}
+                          >
+                            후속관리 생성
+                          </Link>
+                        </div>
                       </td>
                     </tr>
                   ))}

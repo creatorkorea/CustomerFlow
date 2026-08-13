@@ -6,13 +6,18 @@ vi.mock("@/lib/db", () => ({
       count: vi.fn(),
       create: vi.fn(),
       findFirst: vi.fn(),
-      findMany: vi.fn()
+      findMany: vi.fn(),
+      findUnique: vi.fn(),
+      update: vi.fn()
     },
     customer: {
       findFirst: vi.fn(),
       update: vi.fn()
     },
     activityLog: {
+      create: vi.fn()
+    },
+    notification: {
       create: vi.fn()
     },
     $transaction: vi.fn()
@@ -92,9 +97,33 @@ describe("reservation service", () => {
   it("creates a reservation for a customer in the current organization and marks the customer reserved", async () => {
     const customerUpdate = vi.fn();
     const activityCreate = vi.fn();
+    const notificationCreate = vi.fn();
 
     vi.mocked(prisma.customer.findFirst).mockResolvedValueOnce({
       id: 21n
+    } as never);
+    vi.mocked(prisma.reservation.findUnique).mockResolvedValueOnce({
+      id: 81n,
+      organizationId: 7n,
+      customerId: 21n,
+      userId: 3n,
+      title: "방문 설치 예약",
+      startAt: new Date("2026-08-14T01:00:00.000Z"),
+      endAt: new Date("2026-08-14T02:00:00.000Z"),
+      location: "서울 강남구",
+      memo: "엘리베이터 예약 필요",
+      status: "scheduled",
+      createdAt: new Date("2026-08-13T00:00:00.000Z"),
+      updatedAt: new Date("2026-08-13T00:00:00.000Z"),
+      customer: {
+        id: 21n,
+        name: "김철수",
+        phone: "010-1111-1111"
+      },
+      user: {
+        id: 3n,
+        name: "홍길동"
+      }
     } as never);
     vi.mocked(prisma.$transaction).mockImplementationOnce(async (callback) =>
       callback({
@@ -128,6 +157,9 @@ describe("reservation service", () => {
         },
         activityLog: {
           create: activityCreate
+        },
+        notification: {
+          create: notificationCreate
         }
       } as never)
     );
@@ -174,6 +206,16 @@ describe("reservation service", () => {
         })
       })
     );
+    expect(notificationCreate).toHaveBeenCalledWith({
+      data: {
+        organizationId: 7n,
+        userId: 3n,
+        type: "reservation",
+        title: "예약 등록",
+        message: "방문 설치 예약",
+        linkUrl: "/reservations?customerId=21"
+      }
+    });
     expect(result).toMatchObject({
       id: "81",
       organizationId: "7",
@@ -209,10 +251,34 @@ describe("reservation service", () => {
     });
     const customerUpdate = vi.fn();
     const activityCreate = vi.fn();
+    const notificationCreate = vi.fn();
 
     vi.mocked(prisma.reservation.findFirst).mockResolvedValueOnce({
       id: 81n,
       customerId: 21n
+    } as never);
+    vi.mocked(prisma.reservation.findUnique).mockResolvedValueOnce({
+      id: 81n,
+      organizationId: 7n,
+      customerId: 21n,
+      userId: 3n,
+      title: "방문 설치 예약",
+      startAt: new Date("2026-08-14T01:00:00.000Z"),
+      endAt: new Date("2026-08-14T02:00:00.000Z"),
+      location: "서울 강남구",
+      memo: null,
+      status: "completed",
+      createdAt: new Date("2026-08-13T00:00:00.000Z"),
+      updatedAt: new Date("2026-08-13T01:00:00.000Z"),
+      customer: {
+        id: 21n,
+        name: "김철수",
+        phone: "010-1111-1111"
+      },
+      user: {
+        id: 3n,
+        name: "홍길동"
+      }
     } as never);
     vi.mocked(prisma.$transaction).mockImplementationOnce(async (callback) =>
       callback({
@@ -224,6 +290,9 @@ describe("reservation service", () => {
         },
         activityLog: {
           create: activityCreate
+        },
+        notification: {
+          create: notificationCreate
         }
       } as never)
     );
@@ -282,6 +351,16 @@ describe("reservation service", () => {
         })
       })
     );
+    expect(notificationCreate).toHaveBeenCalledWith({
+      data: {
+        organizationId: 7n,
+        userId: 3n,
+        type: "reservation",
+        title: "예약 상태 변경",
+        message: "방문 설치 예약: completed",
+        linkUrl: "/reservations?customerId=21"
+      }
+    });
     expect(result).toMatchObject({
       id: "81",
       status: "completed"

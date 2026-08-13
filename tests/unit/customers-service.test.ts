@@ -58,7 +58,8 @@ describe("customer service", () => {
 
     const result = await listCustomers({
       organizationId: 7n,
-      search: "김철수"
+      search: "김철수",
+      tagId: "101"
     });
 
     expect(prisma.customer.findMany).toHaveBeenCalledWith(
@@ -66,6 +67,14 @@ describe("customer service", () => {
         where: expect.objectContaining({
           organizationId: 7n,
           deletedAt: null,
+          tags: {
+            some: {
+              tagId: 101n,
+              tag: {
+                organizationId: 7n
+              }
+            }
+          },
           OR: [
             { name: { contains: "김철수", mode: "insensitive" } },
             { phone: { contains: "김철수" } },
@@ -88,39 +97,39 @@ describe("customer service", () => {
 
   it("creates customers in the current organization and records activity", async () => {
     vi.mocked(prisma.tag.count).mockResolvedValueOnce(2);
+    vi.mocked(prisma.customer.findUnique).mockResolvedValueOnce({
+      id: 21n,
+      organizationId: 7n,
+      name: "이영희",
+      phone: "010-2222-2222",
+      email: "customer@example.com",
+      address: "서울시",
+      status: "consulting",
+      memo: "신규 문의",
+      lastContactedAt: null,
+      createdAt: new Date("2026-08-13T00:00:00.000Z"),
+      updatedAt: new Date("2026-08-13T00:00:00.000Z"),
+      tags: [
+        {
+          tag: {
+            id: 101n,
+            name: "VIP",
+            color: "#0f766e"
+          }
+        },
+        {
+          tag: {
+            id: 102n,
+            name: "긴급",
+            color: "#dc2626"
+          }
+        }
+      ]
+    } as never);
     vi.mocked(prisma.$transaction).mockImplementationOnce(async (callback) =>
       callback({
         customer: {
           create: vi.fn().mockResolvedValueOnce({
-            id: 21n,
-            organizationId: 7n,
-            name: "이영희",
-            phone: "010-2222-2222",
-            email: "customer@example.com",
-            address: "서울시",
-            status: "consulting",
-            memo: "신규 문의",
-            lastContactedAt: null,
-            createdAt: new Date("2026-08-13T00:00:00.000Z"),
-            updatedAt: new Date("2026-08-13T00:00:00.000Z"),
-            tags: [
-              {
-                tag: {
-                  id: 101n,
-                  name: "VIP",
-                  color: "#0f766e"
-                }
-              },
-              {
-                tag: {
-                  id: 102n,
-                  name: "긴급",
-                  color: "#dc2626"
-                }
-              }
-            ]
-          }),
-          findUnique: vi.fn().mockResolvedValueOnce({
             id: 21n,
             organizationId: 7n,
             name: "이영희",
@@ -204,6 +213,20 @@ describe("customer service", () => {
     vi.mocked(prisma.customer.findFirst).mockResolvedValueOnce({
       id: 31n
     } as never);
+    vi.mocked(prisma.customer.findUnique).mockResolvedValueOnce({
+      id: 31n,
+      organizationId: 7n,
+      name: "수정 고객",
+      phone: "010-3333-3333",
+      email: null,
+      address: null,
+      status: "reserved",
+      memo: null,
+      lastContactedAt: null,
+      createdAt: new Date("2026-08-13T00:00:00.000Z"),
+      updatedAt: new Date("2026-08-13T00:00:00.000Z"),
+      tags: []
+    } as never);
     vi.mocked(prisma.$transaction).mockImplementationOnce(async (callback) =>
       callback({
         customer: {
@@ -219,20 +242,6 @@ describe("customer service", () => {
             lastContactedAt: null,
             createdAt: new Date("2026-08-13T00:00:00.000Z"),
             updatedAt: new Date("2026-08-13T00:00:00.000Z")
-          }),
-          findUnique: vi.fn().mockResolvedValueOnce({
-            id: 31n,
-            organizationId: 7n,
-            name: "수정 고객",
-            phone: "010-3333-3333",
-            email: null,
-            address: null,
-            status: "reserved",
-            memo: null,
-            lastContactedAt: null,
-            createdAt: new Date("2026-08-13T00:00:00.000Z"),
-            updatedAt: new Date("2026-08-13T00:00:00.000Z"),
-            tags: []
           })
         },
         activityLog: {

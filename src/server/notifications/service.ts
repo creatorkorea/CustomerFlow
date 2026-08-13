@@ -53,16 +53,14 @@ export async function listNotifications({
     readAt: null
   };
 
-  const [total, unreadCount, notifications] = await Promise.all([
-    prisma.notification.count({ where }),
-    prisma.notification.count({ where: unreadWhere }),
-    prisma.notification.findMany({
-      where,
-      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-      skip: (page - 1) * pageSize,
-      take: pageSize
-    })
-  ]);
+  const total = await prisma.notification.count({ where });
+  const unreadCount = await prisma.notification.count({ where: unreadWhere });
+  const notifications = await prisma.notification.findMany({
+    where,
+    orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+    skip: (page - 1) * pageSize,
+    take: pageSize
+  });
 
   return {
     notifications: notifications.map((notification) =>
@@ -73,6 +71,22 @@ export async function listNotifications({
     page,
     pageSize
   };
+}
+
+export async function getUnreadNotificationCount({
+  organizationId,
+  userId
+}: {
+  organizationId: bigint;
+  userId: bigint;
+}) {
+  return prisma.notification.count({
+    where: {
+      organizationId,
+      userId,
+      readAt: null
+    }
+  });
 }
 
 export async function markNotificationRead({

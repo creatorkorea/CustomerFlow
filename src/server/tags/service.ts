@@ -38,15 +38,13 @@ export async function listTags({
     ...(search ? { name: { contains: search, mode: "insensitive" } } : {})
   };
 
-  const [total, tags] = await Promise.all([
-    prisma.tag.count({ where }),
-    prisma.tag.findMany({
-      where,
-      orderBy: [{ name: "asc" }, { id: "asc" }],
-      skip: (page - 1) * pageSize,
-      take: pageSize
-    })
-  ]);
+  const total = await prisma.tag.count({ where });
+  const tags = await prisma.tag.findMany({
+    where,
+    orderBy: [{ name: "asc" }, { id: "asc" }],
+    skip: (page - 1) * pageSize,
+    take: pageSize
+  });
 
   return {
     tags: tags.map((tag) => serializeTag(tag as TagRecord)),
