@@ -16,7 +16,7 @@ const navigation = [
   { href: "/dashboard", label: "대시보드", icon: LayoutDashboard },
   { href: "/customers", label: "고객", icon: Users },
   { href: "/consultations", label: "상담", icon: MessageSquareText },
-  { href: "/reservations/calendar", label: "예약", icon: CalendarDays },
+  { href: "/reservations", label: "예약", icon: CalendarDays },
   { href: "/follow-ups", label: "후속관리", icon: ClipboardList },
   { href: "/notifications", label: "알림", icon: Bell },
   { href: "/settings/business", label: "설정", icon: Settings }

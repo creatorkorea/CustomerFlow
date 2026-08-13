@@ -125,3 +125,34 @@ test("authenticated owner can create a consultation for a customer", async ({ pa
   await expect(page).toHaveURL(/\/consultations\?customerId=\d+/);
   await expect(page.getByText(consultationContent)).toBeVisible();
 });
+
+test("authenticated owner can create a reservation for a customer", async ({ page }) => {
+  const customerName = `E2E 예약 ${Date.now()}`;
+  const reservationTitle = "방문 설치 예약";
+
+  await page.goto("/login");
+  await page.getByLabel("이메일").fill("owner@example.com");
+  await page.getByLabel("비밀번호").fill("customerflow-demo-password");
+  await page.getByRole("button", { name: "로그인" }).click();
+  await expect(page).toHaveURL(/\/dashboard/);
+
+  await page.goto("/customers/new");
+  await page.getByLabel("고객명").fill(customerName);
+  await page.getByLabel("전화번호", { exact: true }).fill("010-6666-0000");
+  await page.getByRole("button", { name: "저장" }).click();
+  await expect(page).toHaveURL(/\/customers\/\d+/);
+
+  await page.goto("/reservations/new");
+  await page.locator('select[name="customerId"]').selectOption({
+    label: `${customerName} / 010-6666-0000`
+  });
+  await page.getByLabel("예약명").fill(reservationTitle);
+  await page.getByLabel("시작").fill("2026-08-14T10:00");
+  await page.getByLabel("종료").fill("2026-08-14T11:00");
+  await page.getByLabel("장소").fill("서울 강남구");
+  await page.getByLabel("메모").fill("엘리베이터 예약 필요");
+  await page.getByRole("button", { name: "저장" }).click();
+
+  await expect(page).toHaveURL(/\/reservations\?customerId=\d+/);
+  await expect(page.getByText(reservationTitle)).toBeVisible();
+});
