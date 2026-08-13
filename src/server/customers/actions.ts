@@ -15,7 +15,13 @@ import {
 } from "@/server/customers/validation";
 
 function formDataToObject(formData: FormData) {
-  return Object.fromEntries(formData.entries());
+  const data = Object.fromEntries(formData.entries());
+  const tagIds = formData.getAll("tagIds").map(String);
+
+  return {
+    ...data,
+    tagIds
+  };
 }
 
 export async function createCustomerAction(

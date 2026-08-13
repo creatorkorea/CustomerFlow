@@ -26,7 +26,8 @@ export const createCustomerSchema = z.object({
     .optional(),
   address: optionalText,
   status: customerStatusSchema.default("new"),
-  memo: optionalText
+  memo: optionalText,
+  tagIds: z.array(z.string().trim().regex(/^\d+$/)).default([])
 });
 
 export const updateCustomerSchema = createCustomerSchema.partial().refine(

@@ -185,3 +185,30 @@ test("authenticated owner can create a follow-up for a customer", async ({ page 
   await expect(page).toHaveURL(/\/follow-ups\?customerId=\d+/);
   await expect(page.getByText(followUpTitle)).toBeVisible();
 });
+
+test("authenticated owner can create a tag and assign it to a customer", async ({ page }) => {
+  const tagName = `E2E 태그 ${Date.now()}`;
+  const customerName = `E2E 태그고객 ${Date.now()}`;
+
+  await page.goto("/login");
+  await page.getByLabel("이메일").fill("owner@example.com");
+  await page.getByLabel("비밀번호").fill("customerflow-demo-password");
+  await page.getByRole("button", { name: "로그인" }).click();
+  await expect(page).toHaveURL(/\/dashboard/);
+
+  await page.goto("/tags/new");
+  await page.getByLabel("태그명").fill(tagName);
+  await page.getByRole("button", { name: "저장" }).click();
+  await expect(page).toHaveURL(/\/tags$/);
+  await expect(page.getByText(tagName)).toBeVisible();
+
+  await page.goto("/customers/new");
+  await page.getByLabel("고객명").fill(customerName);
+  await page.getByLabel("전화번호", { exact: true }).fill("010-4444-0000");
+  await page.getByLabel(tagName).check();
+  await page.getByRole("button", { name: "저장" }).click();
+
+  await expect(page).toHaveURL(/\/customers\/\d+/);
+  await expect(page.getByRole("heading", { name: customerName })).toBeVisible();
+  await expect(page.getByText(tagName).first()).toBeVisible();
+});

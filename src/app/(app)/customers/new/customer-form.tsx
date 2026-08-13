@@ -17,7 +17,15 @@ const statusOptions = [
   ["cancelled", "취소"]
 ] as const;
 
-export function CustomerForm() {
+type CustomerFormProps = {
+  tags: Array<{
+    id: string;
+    name: string;
+    color: string | null;
+  }>;
+};
+
+export function CustomerForm({ tags }: CustomerFormProps) {
   const [state, formAction, isPending] = useActionState(
     createCustomerAction,
     initialCustomerActionState
@@ -70,6 +78,32 @@ export function CustomerForm() {
           placeholder="문의 내용이나 특이사항"
         />
       </label>
+      {tags.length > 0 ? (
+        <fieldset className="space-y-3">
+          <legend className="text-sm font-semibold text-slate-700">태그</legend>
+          <div className="flex flex-wrap gap-2">
+            {tags.map((tag) => (
+              <label
+                className="inline-flex cursor-pointer items-center gap-2 rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm font-medium text-slate-700 has-[:checked]:border-teal-500 has-[:checked]:bg-teal-50"
+                key={tag.id}
+              >
+                <input
+                  className="h-4 w-4 rounded border-[var(--border)] accent-teal-700"
+                  name="tagIds"
+                  type="checkbox"
+                  value={tag.id}
+                />
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none h-2.5 w-2.5 rounded-full"
+                  style={{ backgroundColor: tag.color ?? "#0f766e" }}
+                />
+                {tag.name}
+              </label>
+            ))}
+          </div>
+        </fieldset>
+      ) : null}
       <Button disabled={isPending} type="submit">
         <Save aria-hidden="true" className="h-4 w-4" />
         {isPending ? "저장 중" : "저장"}

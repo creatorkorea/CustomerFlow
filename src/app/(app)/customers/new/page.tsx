@@ -3,9 +3,17 @@ import { ArrowLeft } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { requireOrganizationId } from "@/server/auth/session";
+import { listTags } from "@/server/tags/service";
 import { CustomerForm } from "./customer-form";
 
-export default function NewCustomerPage() {
+export default async function NewCustomerPage() {
+  const organizationId = await requireOrganizationId();
+  const { tags } = await listTags({
+    organizationId,
+    pageSize: 100
+  });
+
   return (
     <div className="max-w-3xl space-y-6">
       <div>
@@ -32,7 +40,7 @@ export default function NewCustomerPage() {
           </p>
         </CardHeader>
         <CardContent>
-          <CustomerForm />
+          <CustomerForm tags={tags} />
         </CardContent>
       </Card>
     </div>

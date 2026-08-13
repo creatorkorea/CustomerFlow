@@ -20,7 +20,17 @@ type CustomerEditFormProps = {
     address: string | null;
     status: string;
     memo: string | null;
+    tags: Array<{
+      id: string;
+      name: string;
+      color: string | null;
+    }>;
   };
+  tags: Array<{
+    id: string;
+    name: string;
+    color: string | null;
+  }>;
 };
 
 const statusOptions = [
@@ -32,7 +42,7 @@ const statusOptions = [
   ["cancelled", "취소"]
 ] as const;
 
-export function CustomerEditForm({ customer }: CustomerEditFormProps) {
+export function CustomerEditForm({ customer, tags }: CustomerEditFormProps) {
   const updateWithId = updateCustomerAction.bind(null, customer.id);
   const deleteWithId = deleteCustomerAction.bind(null, customer.id);
   const [state, formAction, isPending] = useActionState(
@@ -90,6 +100,39 @@ export function CustomerEditForm({ customer }: CustomerEditFormProps) {
             name="memo"
           />
         </label>
+        {tags.length > 0 ? (
+          <fieldset className="space-y-3">
+            <legend className="text-sm font-semibold text-slate-700">태그</legend>
+            <div className="flex flex-wrap gap-2">
+              {tags.map((tag) => {
+                const checked = customer.tags.some(
+                  (customerTag) => customerTag.id === tag.id
+                );
+
+                return (
+                  <label
+                    className="inline-flex cursor-pointer items-center gap-2 rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm font-medium text-slate-700 has-[:checked]:border-teal-500 has-[:checked]:bg-teal-50"
+                    key={tag.id}
+                  >
+                    <input
+                      className="h-4 w-4 rounded border-[var(--border)] accent-teal-700"
+                      defaultChecked={checked}
+                      name="tagIds"
+                      type="checkbox"
+                      value={tag.id}
+                    />
+                    <span
+                      aria-hidden="true"
+                      className="pointer-events-none h-2.5 w-2.5 rounded-full"
+                      style={{ backgroundColor: tag.color ?? "#0f766e" }}
+                    />
+                    {tag.name}
+                  </label>
+                );
+              })}
+            </div>
+          </fieldset>
+        ) : null}
         <Button disabled={isPending} type="submit">
           <Save aria-hidden="true" className="h-4 w-4" />
           {isPending ? "저장 중" : "변경 저장"}

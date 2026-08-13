@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireOrganizationId } from "@/server/auth/session";
 import { getCustomer } from "@/server/customers/service";
+import { listTags } from "@/server/tags/service";
 import { notFound } from "next/navigation";
 import { CustomerEditForm } from "./customer-edit-form";
 
@@ -37,10 +38,16 @@ export default async function CustomerDetailPage({
 }: CustomerDetailPageProps) {
   const organizationId = await requireOrganizationId();
   const { id } = await params;
-  const customer = await getCustomer({
-    customerId: BigInt(id),
-    organizationId
-  }).catch(() => null);
+  const [customer, tagResult] = await Promise.all([
+    getCustomer({
+      customerId: BigInt(id),
+      organizationId
+    }).catch(() => null),
+    listTags({
+      organizationId,
+      pageSize: 100
+    })
+  ]);
 
   if (!customer) {
     notFound();
@@ -104,7 +111,7 @@ export default async function CustomerDetailPage({
           </p>
         </CardHeader>
         <CardContent>
-          <CustomerEditForm customer={customer} />
+          <CustomerEditForm customer={customer} tags={tagResult.tags} />
         </CardContent>
       </Card>
     </div>

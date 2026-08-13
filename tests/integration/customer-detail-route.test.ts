@@ -100,7 +100,8 @@ describe("/api/customers/[id]", () => {
         userId: 3n,
         input: {
           name: "수정 고객",
-          status: "reserved"
+          status: "reserved",
+          tagIds: []
         }
       })
     );

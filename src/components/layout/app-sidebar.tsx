@@ -9,6 +9,7 @@ import {
   LayoutDashboard,
   MessageSquareText,
   Settings,
+  Tags,
   Users
 } from "lucide-react";
 
@@ -18,6 +19,7 @@ const navigation = [
   { href: "/consultations", label: "상담", icon: MessageSquareText },
   { href: "/reservations", label: "예약", icon: CalendarDays },
   { href: "/follow-ups", label: "후속관리", icon: ClipboardList },
+  { href: "/tags", label: "태그", icon: Tags },
   { href: "/notifications", label: "알림", icon: Bell },
   { href: "/settings/business", label: "설정", icon: Settings }
 ];

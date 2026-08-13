@@ -6,11 +6,16 @@ vi.mock("@/lib/db", () => ({
       count: vi.fn(),
       create: vi.fn(),
       findFirst: vi.fn(),
+      findUnique: vi.fn(),
       findMany: vi.fn(),
       update: vi.fn()
     },
     tag: {
       count: vi.fn()
+    },
+    customerTag: {
+      createMany: vi.fn(),
+      deleteMany: vi.fn()
     },
     activityLog: {
       create: vi.fn()
@@ -82,6 +87,7 @@ describe("customer service", () => {
   });
 
   it("creates customers in the current organization and records activity", async () => {
+    vi.mocked(prisma.tag.count).mockResolvedValueOnce(2);
     vi.mocked(prisma.$transaction).mockImplementationOnce(async (callback) =>
       callback({
         customer: {
@@ -96,8 +102,56 @@ describe("customer service", () => {
             memo: "신규 문의",
             lastContactedAt: null,
             createdAt: new Date("2026-08-13T00:00:00.000Z"),
-            updatedAt: new Date("2026-08-13T00:00:00.000Z")
+            updatedAt: new Date("2026-08-13T00:00:00.000Z"),
+            tags: [
+              {
+                tag: {
+                  id: 101n,
+                  name: "VIP",
+                  color: "#0f766e"
+                }
+              },
+              {
+                tag: {
+                  id: 102n,
+                  name: "긴급",
+                  color: "#dc2626"
+                }
+              }
+            ]
+          }),
+          findUnique: vi.fn().mockResolvedValueOnce({
+            id: 21n,
+            organizationId: 7n,
+            name: "이영희",
+            phone: "010-2222-2222",
+            email: "customer@example.com",
+            address: "서울시",
+            status: "consulting",
+            memo: "신규 문의",
+            lastContactedAt: null,
+            createdAt: new Date("2026-08-13T00:00:00.000Z"),
+            updatedAt: new Date("2026-08-13T00:00:00.000Z"),
+            tags: [
+              {
+                tag: {
+                  id: 101n,
+                  name: "VIP",
+                  color: "#0f766e"
+                }
+              },
+              {
+                tag: {
+                  id: 102n,
+                  name: "긴급",
+                  color: "#dc2626"
+                }
+              }
+            ]
           })
+        },
+        customerTag: {
+          createMany: vi.fn()
         },
         activityLog: {
           create: vi.fn()
@@ -114,7 +168,17 @@ describe("customer service", () => {
         email: "customer@example.com",
         address: "서울시",
         status: "consulting",
-        memo: "신규 문의"
+        memo: "신규 문의",
+        tagIds: ["101", "102"]
+      }
+    });
+
+    expect(prisma.tag.count).toHaveBeenCalledWith({
+      where: {
+        id: {
+          in: [101n, 102n]
+        },
+        organizationId: 7n
       }
     });
 
@@ -122,7 +186,17 @@ describe("customer service", () => {
       id: "21",
       organizationId: "7",
       name: "이영희",
-      status: "consulting"
+      status: "consulting",
+      tags: [
+        {
+          id: "101",
+          name: "VIP"
+        },
+        {
+          id: "102",
+          name: "긴급"
+        }
+      ]
     });
   });
 
@@ -145,6 +219,20 @@ describe("customer service", () => {
             lastContactedAt: null,
             createdAt: new Date("2026-08-13T00:00:00.000Z"),
             updatedAt: new Date("2026-08-13T00:00:00.000Z")
+          }),
+          findUnique: vi.fn().mockResolvedValueOnce({
+            id: 31n,
+            organizationId: 7n,
+            name: "수정 고객",
+            phone: "010-3333-3333",
+            email: null,
+            address: null,
+            status: "reserved",
+            memo: null,
+            lastContactedAt: null,
+            createdAt: new Date("2026-08-13T00:00:00.000Z"),
+            updatedAt: new Date("2026-08-13T00:00:00.000Z"),
+            tags: []
           })
         },
         activityLog: {

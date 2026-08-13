@@ -55,6 +55,35 @@ function serializeCustomer(customer: CustomerWithTags) {
   };
 }
 
+async function ensureTagsInOrganization({
+  tagIds,
+  organizationId
+}: {
+  tagIds: bigint[];
+  organizationId: bigint;
+}) {
+  const uniqueTagIds = [...new Set(tagIds)];
+
+  if (uniqueTagIds.length === 0) {
+    return uniqueTagIds;
+  }
+
+  const count = await prisma.tag.count({
+    where: {
+      id: {
+        in: uniqueTagIds
+      },
+      organizationId
+    }
+  });
+
+  if (count !== uniqueTagIds.length) {
+    throw new AppError("NOT_FOUND", "태그를 찾을 수 없습니다.", 404);
+  }
+
+  return uniqueTagIds;
+}
+
 export async function listCustomers({
   organizationId,
   search,
@@ -111,6 +140,10 @@ export async function createCustomer({
   userId?: bigint;
   input: CreateCustomerInput;
 }) {
+  const tagIds = await ensureTagsInOrganization({
+    tagIds: input.tagIds.map(BigInt),
+    organizationId
+  });
   const customer = await prisma.$transaction(async (tx) => {
     const created = await tx.customer.create({
       data: {
@@ -123,6 +156,16 @@ export async function createCustomer({
         memo: input.memo
       }
     });
+
+    if (tagIds.length > 0) {
+      await tx.customerTag.createMany({
+        data: tagIds.map((tagId) => ({
+          customerId: created.id,
+          tagId
+        })),
+        skipDuplicates: true
+      });
+    }
 
     await tx.activityLog.create({
       data: {
@@ -137,8 +180,23 @@ export async function createCustomer({
       }
     });
 
-    return created;
+    return tx.customer.findUnique({
+      where: {
+        id: created.id
+      },
+      include: {
+        tags: {
+          include: {
+            tag: true
+          }
+        }
+      }
+    });
   });
+
+  if (!customer) {
+    throw new AppError("NOT_FOUND", "고객을 찾을 수 없습니다.", 404);
+  }
 
   return serializeCustomer(customer);
 }
@@ -207,14 +265,39 @@ export async function updateCustomer({
   input: UpdateCustomerInput;
 }) {
   await ensureCustomerExists({ customerId, organizationId });
+  const { tagIds: inputTagIds, ...customerInput } = input;
+  const tagIds =
+    inputTagIds === undefined
+      ? undefined
+      : await ensureTagsInOrganization({
+          tagIds: inputTagIds.map(BigInt),
+          organizationId
+        });
 
   const customer = await prisma.$transaction(async (tx) => {
     const updated = await tx.customer.update({
       where: {
         id: customerId
       },
-      data: input
+      data: customerInput
     });
+
+    if (tagIds) {
+      await tx.customerTag.deleteMany({
+        where: {
+          customerId
+        }
+      });
+      if (tagIds.length > 0) {
+        await tx.customerTag.createMany({
+          data: tagIds.map((tagId) => ({
+            customerId,
+            tagId
+          })),
+          skipDuplicates: true
+        });
+      }
+    }
 
     await tx.activityLog.create({
       data: {
@@ -229,8 +312,23 @@ export async function updateCustomer({
       }
     });
 
-    return updated;
+    return tx.customer.findUnique({
+      where: {
+        id: updated.id
+      },
+      include: {
+        tags: {
+          include: {
+            tag: true
+          }
+        }
+      }
+    });
   });
+
+  if (!customer) {
+    throw new AppError("NOT_FOUND", "고객을 찾을 수 없습니다.", 404);
+  }
 
   return serializeCustomer(customer);
 }
