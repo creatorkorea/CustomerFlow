@@ -192,6 +192,10 @@ test("authenticated owner can create a follow-up for a customer", async ({ page 
 
   await expect(page).toHaveURL(/\/follow-ups\?customerId=\d+/);
   await expect(page.getByText(followUpTitle)).toBeVisible();
+  await page.getByRole("button", { name: "완료 처리" }).first().click();
+  await expect(
+    page.getByRole("row", { name: new RegExp(`${followUpTitle}.*완료`) })
+  ).toBeVisible();
 
   await page.goto(page.url().replace(/\/follow-ups\?customerId=(\d+)/, "/customers/$1"));
   await expect(page.getByRole("heading", { name: customerName })).toBeVisible();

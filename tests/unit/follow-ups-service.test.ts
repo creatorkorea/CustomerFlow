@@ -5,6 +5,7 @@ vi.mock("@/lib/db", () => ({
     followUp: {
       count: vi.fn(),
       create: vi.fn(),
+      findFirst: vi.fn(),
       findMany: vi.fn()
     },
     customer: {
@@ -24,7 +25,11 @@ vi.mock("@/lib/db", () => ({
 }));
 
 import { prisma } from "@/lib/db";
-import { createFollowUp, listFollowUps } from "@/server/follow-ups/service";
+import {
+  createFollowUp,
+  listFollowUps,
+  updateFollowUpStatus
+} from "@/server/follow-ups/service";
 
 describe("follow-up service", () => {
   beforeEach(() => {
@@ -182,6 +187,102 @@ describe("follow-up service", () => {
       customerId: "21",
       customerName: "김철수",
       status: "pending"
+    });
+  });
+
+  it("updates a follow-up status only inside the current organization and logs the activity", async () => {
+    const followUpUpdate = vi.fn().mockResolvedValueOnce({
+      id: 101n,
+      organizationId: 7n,
+      customerId: 21n,
+      consultationId: null,
+      userId: 3n,
+      title: "예약 전 확인 연락",
+      memo: null,
+      dueAt: new Date("2026-08-15T01:00:00.000Z"),
+      status: "completed",
+      completedAt: new Date("2026-08-13T01:00:00.000Z"),
+      createdAt: new Date("2026-08-13T00:00:00.000Z"),
+      updatedAt: new Date("2026-08-13T01:00:00.000Z"),
+      customer: {
+        id: 21n,
+        name: "김철수",
+        phone: "010-1111-1111"
+      },
+      consultation: null,
+      user: {
+        id: 3n,
+        name: "홍길동"
+      }
+    });
+    const activityCreate = vi.fn();
+
+    vi.mocked(prisma.followUp.findFirst).mockResolvedValueOnce({
+      id: 101n,
+      customerId: 21n
+    } as never);
+    vi.mocked(prisma.$transaction).mockImplementationOnce(async (callback) =>
+      callback({
+        followUp: {
+          update: followUpUpdate
+        },
+        activityLog: {
+          create: activityCreate
+        }
+      } as never)
+    );
+
+    const result = await updateFollowUpStatus({
+      followUpId: 101n,
+      organizationId: 7n,
+      userId: 3n,
+      input: {
+        status: "completed"
+      }
+    });
+
+    expect(prisma.followUp.findFirst).toHaveBeenCalledWith({
+      where: {
+        id: 101n,
+        organizationId: 7n,
+        deletedAt: null
+      },
+      select: {
+        id: true,
+        customerId: true
+      }
+    });
+    expect(followUpUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          id: 101n
+        },
+        data: {
+          status: "completed",
+          completedAt: expect.any(Date)
+        }
+      })
+    );
+    expect(activityCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          organizationId: 7n,
+          userId: 3n,
+          entityType: "FOLLOW_UP",
+          entityId: 101n,
+          action: "FOLLOW_UP_STATUS_UPDATED",
+          metadata: {
+            customerId: "21",
+            status: "completed",
+            source: "follow-up-service"
+          }
+        })
+      })
+    );
+    expect(result).toMatchObject({
+      id: "101",
+      status: "completed",
+      completedAt: expect.any(String)
     });
   });
 });

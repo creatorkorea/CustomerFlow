@@ -1,11 +1,15 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { requireUser } from "@/server/auth/session";
 import type { FollowUpActionState } from "@/server/follow-ups/action-state";
-import { createFollowUp } from "@/server/follow-ups/service";
-import { createFollowUpSchema } from "@/server/follow-ups/validation";
+import { createFollowUp, updateFollowUpStatus } from "@/server/follow-ups/service";
+import {
+  createFollowUpSchema,
+  updateFollowUpStatusSchema
+} from "@/server/follow-ups/validation";
 
 function formDataToObject(formData: FormData) {
   return Object.fromEntries(formData.entries());
@@ -48,4 +52,25 @@ export async function createFollowUpAction(
   });
 
   redirect(`/follow-ups?customerId=${followUp.customerId}`);
+}
+
+export async function updateFollowUpStatusAction(formData: FormData) {
+  const user = await requireUser();
+  const followUpId = formData.get("followUpId");
+  const parsed = updateFollowUpStatusSchema.safeParse({
+    status: formData.get("status")
+  });
+
+  if (!parsed.success || !user.organizationId || typeof followUpId !== "string") {
+    return;
+  }
+
+  await updateFollowUpStatus({
+    followUpId: BigInt(followUpId),
+    organizationId: BigInt(user.organizationId),
+    userId: BigInt(user.id),
+    input: parsed.data
+  });
+
+  revalidatePath("/follow-ups");
 }

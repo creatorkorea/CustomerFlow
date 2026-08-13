@@ -3,7 +3,8 @@ import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import type {
   CreateFollowUpInput,
-  ListFollowUpsInput
+  ListFollowUpsInput,
+  UpdateFollowUpStatusInput
 } from "@/server/follow-ups/validation";
 import { AppError } from "@/server/shared/http-errors";
 
@@ -263,6 +264,88 @@ export async function createFollowUp({
     }
 
     return created;
+  });
+
+  return serializeFollowUp(followUp as FollowUpWithRelations);
+}
+
+export async function updateFollowUpStatus({
+  followUpId,
+  organizationId,
+  userId,
+  input
+}: {
+  followUpId: bigint;
+  organizationId: bigint;
+  userId?: bigint;
+  input: UpdateFollowUpStatusInput;
+}) {
+  const existing = await prisma.followUp.findFirst({
+    where: {
+      id: followUpId,
+      organizationId,
+      deletedAt: null
+    },
+    select: {
+      id: true,
+      customerId: true
+    }
+  });
+
+  if (!existing) {
+    throw new AppError("NOT_FOUND", "후속관리를 찾을 수 없습니다.", 404);
+  }
+
+  const completedAt = input.status === "completed" ? new Date() : null;
+
+  const followUp = await prisma.$transaction(async (tx) => {
+    const updated = await tx.followUp.update({
+      where: {
+        id: followUpId
+      },
+      data: {
+        status: input.status,
+        completedAt
+      },
+      include: {
+        customer: {
+          select: {
+            id: true,
+            name: true,
+            phone: true
+          }
+        },
+        consultation: {
+          select: {
+            id: true,
+            content: true
+          }
+        },
+        user: {
+          select: {
+            id: true,
+            name: true
+          }
+        }
+      }
+    });
+
+    await tx.activityLog.create({
+      data: {
+        organizationId,
+        userId,
+        entityType: "FOLLOW_UP",
+        entityId: followUpId,
+        action: "FOLLOW_UP_STATUS_UPDATED",
+        metadata: {
+          customerId: existing.customerId.toString(),
+          status: input.status,
+          source: "follow-up-service"
+        }
+      }
+    });
+
+    return updated;
   });
 
   return serializeFollowUp(followUp as FollowUpWithRelations);

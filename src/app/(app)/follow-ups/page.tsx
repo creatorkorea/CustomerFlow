@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { requireOrganizationId } from "@/server/auth/session";
+import { updateFollowUpStatusAction } from "@/server/follow-ups/actions";
 import { listFollowUps } from "@/server/follow-ups/service";
 import { listFollowUpsSchema } from "@/server/follow-ups/validation";
 
@@ -165,6 +166,7 @@ export default async function FollowUpsPage({ searchParams }: FollowUpsPageProps
                     <th className="px-4 py-3">마감</th>
                     <th className="px-4 py-3">상담 연결</th>
                     <th className="px-4 py-3">담당자</th>
+                    <th className="px-4 py-3">처리</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[var(--border)]">
@@ -202,6 +204,36 @@ export default async function FollowUpsPage({ searchParams }: FollowUpsPageProps
                       </td>
                       <td className="px-4 py-3 text-slate-600">
                         {followUp.userName ?? "-"}
+                      </td>
+                      <td className="px-4 py-3">
+                        {followUp.status === "pending" ? (
+                          <div className="flex gap-2">
+                            <form action={updateFollowUpStatusAction}>
+                              <input
+                                name="followUpId"
+                                type="hidden"
+                                value={followUp.id}
+                              />
+                              <input name="status" type="hidden" value="completed" />
+                              <Button size="sm" type="submit" variant="outline">
+                                완료 처리
+                              </Button>
+                            </form>
+                            <form action={updateFollowUpStatusAction}>
+                              <input
+                                name="followUpId"
+                                type="hidden"
+                                value={followUp.id}
+                              />
+                              <input name="status" type="hidden" value="cancelled" />
+                              <Button size="sm" type="submit" variant="ghost">
+                                취소
+                              </Button>
+                            </form>
+                          </div>
+                        ) : (
+                          <span className="text-xs text-slate-500">처리됨</span>
+                        )}
                       </td>
                     </tr>
                   ))}

@@ -13,7 +13,8 @@ const authUrl = "http://127.0.0.1:3000";
 
 export default defineConfig({
   testDir: "./e2e",
-  fullyParallel: true,
+  fullyParallel: false,
+  workers: 1,
   reporter: "list",
   use: {
     baseURL: "http://127.0.0.1:3000",

@@ -26,6 +26,10 @@ export const createFollowUpSchema = z.object({
   status: followUpStatusSchema.default("pending")
 });
 
+export const updateFollowUpStatusSchema = z.object({
+  status: followUpStatusSchema
+});
+
 export const listFollowUpsSchema = z.object({
   customerId: z.string().trim().regex(/^\d+$/).optional(),
   status: followUpStatusSchema.optional(),
@@ -36,4 +40,7 @@ export const listFollowUpsSchema = z.object({
 });
 
 export type CreateFollowUpInput = z.infer<typeof createFollowUpSchema>;
+export type UpdateFollowUpStatusInput = z.infer<
+  typeof updateFollowUpStatusSchema
+>;
 export type ListFollowUpsInput = z.infer<typeof listFollowUpsSchema>;
