@@ -17,6 +17,15 @@ const statusLabels = {
   cancelled: "취소"
 };
 
+const statusVariants = {
+  new: "info",
+  consulting: "default",
+  reserved: "warning",
+  completed: "success",
+  dormant: "neutral",
+  cancelled: "danger"
+} as const;
+
 type CustomerDetailPageProps = {
   params: Promise<{
     id: string;
@@ -56,7 +65,9 @@ export default async function CustomerDetailPage({
               {customer.phone ?? "전화번호 없음"}
             </p>
           </div>
-          <Badge>{statusLabels[customer.status]}</Badge>
+          <Badge variant={statusVariants[customer.status]}>
+            {statusLabels[customer.status]}
+          </Badge>
         </div>
       </div>
       <section className="grid gap-4 lg:grid-cols-[320px_1fr]">
@@ -67,7 +78,10 @@ export default async function CustomerDetailPage({
           <CardContent className="space-y-3 text-sm">
             <Info label="이메일" value={customer.email} />
             <Info label="주소" value={customer.address} />
-            <Info label="태그" value={customer.tags.map((tag) => tag.name).join(", ")} />
+            <Info
+              label="태그"
+              value={customer.tags.map((tag) => tag.name).join(", ")}
+            />
             <Info label="메모" value={customer.memo} />
           </CardContent>
         </Card>
@@ -76,7 +90,7 @@ export default async function CustomerDetailPage({
             <CardTitle>활동 타임라인</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-slate-600">
+            <p className="rounded-md border border-dashed border-[var(--border)] bg-[var(--surface-subtle)] px-4 py-8 text-center text-sm text-slate-600">
               상담, 예약, 후속관리 이력은 다음 단계에서 연결됩니다.
             </p>
           </CardContent>
@@ -85,6 +99,9 @@ export default async function CustomerDetailPage({
       <Card>
         <CardHeader>
           <CardTitle>고객 수정</CardTitle>
+          <p className="mt-2 text-sm text-slate-600">
+            고객 기본정보와 상태를 최신으로 유지하세요.
+          </p>
         </CardHeader>
         <CardContent>
           <CustomerEditForm customer={customer} />

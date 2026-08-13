@@ -27,6 +27,9 @@ export default function NewCustomerPage() {
       <Card>
         <CardHeader>
           <CardTitle>기본정보</CardTitle>
+          <p className="mt-2 text-sm text-slate-600">
+            필수 정보는 고객명뿐입니다. 상담이 시작되면 전화번호와 메모를 보강하세요.
+          </p>
         </CardHeader>
         <CardContent>
           <CustomerForm />

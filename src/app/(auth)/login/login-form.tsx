@@ -27,7 +27,7 @@ export function LoginForm() {
         </p>
       ) : null}
       <div className="space-y-2">
-        <label className="text-sm font-medium" htmlFor="email">
+        <label className="text-sm font-semibold text-slate-700" htmlFor="email">
           이메일
         </label>
         <Input
@@ -39,7 +39,7 @@ export function LoginForm() {
         />
       </div>
       <div className="space-y-2">
-        <label className="text-sm font-medium" htmlFor="password">
+        <label className="text-sm font-semibold text-slate-700" htmlFor="password">
           비밀번호
         </label>
         <Input
@@ -54,7 +54,9 @@ export function LoginForm() {
         {isPending ? "로그인 중" : "로그인"}
       </Button>
       <div className="flex items-center justify-between text-sm text-slate-600">
-        <Link href="/register">회원가입</Link>
+        <Link className="font-medium text-teal-700" href="/register">
+          회원가입
+        </Link>
         <span>비밀번호 찾기</span>
       </div>
     </form>

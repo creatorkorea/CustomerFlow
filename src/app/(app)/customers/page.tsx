@@ -18,6 +18,15 @@ const statusLabels = {
   cancelled: "취소"
 };
 
+const statusVariants = {
+  new: "info",
+  consulting: "default",
+  reserved: "warning",
+  completed: "success",
+  dormant: "neutral",
+  cancelled: "danger"
+} as const;
+
 type CustomersPageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
@@ -53,7 +62,7 @@ export default async function CustomersPage({
           </p>
         </div>
         <Link
-          className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md bg-[var(--primary)] px-4 text-sm font-medium text-[var(--primary-foreground)] transition-colors hover:bg-teal-800 sm:w-auto"
+          className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md bg-[var(--primary)] px-4 text-sm font-semibold text-[var(--primary-foreground)] shadow-sm transition-colors hover:bg-teal-700 sm:w-auto"
           href="/customers/new"
         >
           <Plus aria-hidden="true" className="h-4 w-4" />
@@ -61,7 +70,43 @@ export default async function CustomersPage({
         </Link>
       </div>
 
-      <form className="flex flex-col gap-3 rounded-lg border border-[var(--border)] bg-white p-4 sm:flex-row">
+      <section className="grid gap-4 md:grid-cols-3">
+        <Card>
+          <CardContent className="flex items-center justify-between p-5">
+            <div>
+              <div className="text-xs font-semibold text-slate-500">전체 고객</div>
+              <div className="mt-1 text-2xl font-bold text-slate-950">{total}</div>
+            </div>
+            <Badge variant="neutral">전체</Badge>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="flex items-center justify-between p-5">
+            <div>
+              <div className="text-xs font-semibold text-slate-500">현재 필터</div>
+              <div className="mt-1 text-2xl font-bold text-slate-950">
+                {parsed.status ? statusLabels[parsed.status] : "전체"}
+              </div>
+            </div>
+            <Badge variant={parsed.status ? statusVariants[parsed.status] : "default"}>
+              상태
+            </Badge>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="flex items-center justify-between p-5">
+            <div>
+              <div className="text-xs font-semibold text-slate-500">검색어</div>
+              <div className="mt-1 text-2xl font-bold text-slate-950">
+                {parsed.search ? "적용" : "없음"}
+              </div>
+            </div>
+            <Badge variant="info">검색</Badge>
+          </CardContent>
+        </Card>
+      </section>
+
+      <form className="flex flex-col gap-3 rounded-lg border border-[var(--border)] bg-white p-4 shadow-[0_1px_2px_rgb(15_23_42/0.04)] sm:flex-row">
         <label className="relative flex-1">
           <span className="sr-only">이름/전화번호 검색</span>
           <Search
@@ -76,7 +121,7 @@ export default async function CustomersPage({
           />
         </label>
         <select
-          className="h-10 rounded-md border border-[var(--border)] bg-white px-3 text-sm text-slate-700"
+          className="form-select w-full sm:w-44"
           defaultValue={parsed.status ?? ""}
           name="status"
         >
@@ -111,7 +156,7 @@ export default async function CustomersPage({
             <div className="overflow-x-auto">
               <table className="w-full min-w-[760px] text-sm">
                 <caption className="sr-only">고객 목록 총 {total}명</caption>
-                <thead className="border-b border-[var(--border)] bg-slate-50 text-left text-xs font-medium uppercase text-slate-500">
+                <thead className="border-b border-[var(--border)] bg-slate-50 text-left text-xs font-semibold uppercase text-slate-500">
                   <tr>
                     <th className="px-4 py-3">고객명</th>
                     <th className="px-4 py-3">전화번호</th>
@@ -123,9 +168,9 @@ export default async function CustomersPage({
                 </thead>
                 <tbody className="divide-y divide-[var(--border)]">
                   {customers.map((customer) => (
-                    <tr className="hover:bg-slate-50" key={customer.id}>
+                    <tr className="transition-colors hover:bg-teal-50/40" key={customer.id}>
                       <td className="px-4 py-3 font-medium text-slate-950">
-                        <Link href={`/customers/${customer.id}`}>
+                        <Link className="hover:text-teal-700" href={`/customers/${customer.id}`}>
                           {customer.name}
                         </Link>
                       </td>
@@ -136,7 +181,9 @@ export default async function CustomersPage({
                         {customer.email ?? "-"}
                       </td>
                       <td className="px-4 py-3">
-                        <Badge>{statusLabels[customer.status]}</Badge>
+                        <Badge variant={statusVariants[customer.status]}>
+                          {statusLabels[customer.status]}
+                        </Badge>
                       </td>
                       <td className="px-4 py-3 text-slate-600">
                         {customer.lastContactedAt

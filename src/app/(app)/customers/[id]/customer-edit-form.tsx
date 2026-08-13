@@ -49,15 +49,15 @@ export function CustomerEditForm({ customer }: CustomerEditFormProps) {
           </div>
         ) : null}
         <label className="space-y-2">
-          <span className="text-sm font-medium text-slate-700">고객명</span>
+          <span className="text-sm font-semibold text-slate-700">고객명</span>
           <Input defaultValue={customer.name} name="name" required />
         </label>
         <label className="space-y-2">
-          <span className="text-sm font-medium text-slate-700">전화번호</span>
+          <span className="text-sm font-semibold text-slate-700">전화번호</span>
           <Input defaultValue={customer.phone ?? ""} name="phone" />
         </label>
         <label className="space-y-2">
-          <span className="text-sm font-medium text-slate-700">이메일</span>
+          <span className="text-sm font-semibold text-slate-700">이메일</span>
           <Input
             defaultValue={customer.email ?? ""}
             name="email"
@@ -65,13 +65,13 @@ export function CustomerEditForm({ customer }: CustomerEditFormProps) {
           />
         </label>
         <label className="space-y-2">
-          <span className="text-sm font-medium text-slate-700">주소</span>
+          <span className="text-sm font-semibold text-slate-700">주소</span>
           <Input defaultValue={customer.address ?? ""} name="address" />
         </label>
         <label className="space-y-2">
-          <span className="text-sm font-medium text-slate-700">상태</span>
+          <span className="text-sm font-semibold text-slate-700">상태</span>
           <select
-            className="h-10 w-full rounded-md border border-[var(--border)] bg-white px-3 text-sm text-slate-700"
+            className="form-select w-full"
             defaultValue={customer.status}
             name="status"
           >
@@ -83,9 +83,9 @@ export function CustomerEditForm({ customer }: CustomerEditFormProps) {
           </select>
         </label>
         <label className="space-y-2">
-          <span className="text-sm font-medium text-slate-700">메모</span>
+          <span className="text-sm font-semibold text-slate-700">메모</span>
           <textarea
-            className="min-h-28 w-full resize-y rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none transition-colors placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+            className="form-textarea w-full"
             defaultValue={customer.memo ?? ""}
             name="memo"
           />

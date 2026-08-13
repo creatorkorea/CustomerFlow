@@ -32,21 +32,21 @@ export function CustomerForm() {
       ) : null}
       <div className="grid gap-4 md:grid-cols-2">
         <label className="space-y-2">
-          <span className="text-sm font-medium text-slate-700">고객명</span>
+          <span className="text-sm font-semibold text-slate-700">고객명</span>
           <Input name="name" placeholder="김철수" required />
         </label>
         <label className="space-y-2">
-          <span className="text-sm font-medium text-slate-700">전화번호</span>
+          <span className="text-sm font-semibold text-slate-700">전화번호</span>
           <Input name="phone" placeholder="010-1234-5678" />
         </label>
         <label className="space-y-2">
-          <span className="text-sm font-medium text-slate-700">이메일</span>
+          <span className="text-sm font-semibold text-slate-700">이메일</span>
           <Input name="email" placeholder="customer@example.com" type="email" />
         </label>
         <label className="space-y-2">
-          <span className="text-sm font-medium text-slate-700">상태</span>
+          <span className="text-sm font-semibold text-slate-700">상태</span>
           <select
-            className="h-10 w-full rounded-md border border-[var(--border)] bg-white px-3 text-sm text-slate-700"
+            className="form-select w-full"
             defaultValue="new"
             name="status"
           >
@@ -59,13 +59,13 @@ export function CustomerForm() {
         </label>
       </div>
       <label className="space-y-2">
-        <span className="text-sm font-medium text-slate-700">주소</span>
+        <span className="text-sm font-semibold text-slate-700">주소</span>
         <Input name="address" placeholder="서울시 강남구" />
       </label>
       <label className="space-y-2">
-        <span className="text-sm font-medium text-slate-700">메모</span>
+        <span className="text-sm font-semibold text-slate-700">메모</span>
         <textarea
-          className="min-h-32 w-full resize-y rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm outline-none transition-colors placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+          className="form-textarea w-full"
           name="memo"
           placeholder="문의 내용이나 특이사항"
         />
