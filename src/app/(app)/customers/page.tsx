@@ -1,0 +1,162 @@
+import Link from "next/link";
+import { Plus, Search } from "lucide-react";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { requireOrganizationId } from "@/server/auth/session";
+import { listCustomers } from "@/server/customers/service";
+import { listCustomersSchema } from "@/server/customers/validation";
+
+const statusLabels = {
+  new: "신규",
+  consulting: "상담중",
+  reserved: "예약",
+  completed: "완료",
+  dormant: "휴면",
+  cancelled: "취소"
+};
+
+type CustomersPageProps = {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+};
+
+function firstParam(value: string | string[] | undefined) {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+export default async function CustomersPage({
+  searchParams
+}: CustomersPageProps) {
+  const organizationId = await requireOrganizationId();
+  const params = await searchParams;
+  const parsed = listCustomersSchema.parse({
+    search: firstParam(params.search),
+    status: firstParam(params.status)
+  });
+  const { customers, total } = await listCustomers({
+    organizationId,
+    ...parsed
+  });
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <Badge>Customers</Badge>
+          <h1 className="mt-3 text-2xl font-semibold tracking-tight text-slate-950">
+            고객
+          </h1>
+          <p className="mt-2 text-sm text-slate-600">
+            신규 문의부터 예약, 후속관리까지 이어질 고객 기반 데이터입니다.
+          </p>
+        </div>
+        <Link
+          className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md bg-[var(--primary)] px-4 text-sm font-medium text-[var(--primary-foreground)] transition-colors hover:bg-teal-800 sm:w-auto"
+          href="/customers/new"
+        >
+          <Plus aria-hidden="true" className="h-4 w-4" />
+          고객 추가
+        </Link>
+      </div>
+
+      <form className="flex flex-col gap-3 rounded-lg border border-[var(--border)] bg-white p-4 sm:flex-row">
+        <label className="relative flex-1">
+          <span className="sr-only">이름/전화번호 검색</span>
+          <Search
+            aria-hidden="true"
+            className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
+          />
+          <Input
+            className="pl-9"
+            defaultValue={parsed.search}
+            name="search"
+            placeholder="이름, 전화번호, 이메일 검색"
+          />
+        </label>
+        <select
+          className="h-10 rounded-md border border-[var(--border)] bg-white px-3 text-sm text-slate-700"
+          defaultValue={parsed.status ?? ""}
+          name="status"
+        >
+          <option value="">전체 상태</option>
+          {Object.entries(statusLabels).map(([value, label]) => (
+            <option key={value} value={value}>
+              {label}
+            </option>
+          ))}
+        </select>
+        <Button type="submit">검색</Button>
+      </form>
+
+      <Card>
+        <CardContent className="p-0">
+          {customers.length === 0 ? (
+            <div className="flex min-h-72 flex-col items-center justify-center px-6 text-center">
+              <h2 className="text-lg font-semibold text-slate-950">
+                아직 등록된 고객이 없습니다.
+              </h2>
+              <p className="mt-2 text-sm text-slate-600">
+                첫 고객을 등록하고 상담과 예약을 관리해보세요.
+              </p>
+              <Link
+                className="mt-5 inline-flex h-10 items-center justify-center gap-2 rounded-md bg-[var(--primary)] px-4 text-sm font-medium text-[var(--primary-foreground)] hover:bg-teal-800"
+                href="/customers/new"
+              >
+                <Plus aria-hidden="true" className="h-4 w-4" />첫 고객 등록
+              </Link>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[760px] text-sm">
+                <caption className="sr-only">고객 목록 총 {total}명</caption>
+                <thead className="border-b border-[var(--border)] bg-slate-50 text-left text-xs font-medium uppercase text-slate-500">
+                  <tr>
+                    <th className="px-4 py-3">고객명</th>
+                    <th className="px-4 py-3">전화번호</th>
+                    <th className="px-4 py-3">이메일</th>
+                    <th className="px-4 py-3">상태</th>
+                    <th className="px-4 py-3">최근 상담</th>
+                    <th className="px-4 py-3">태그</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[var(--border)]">
+                  {customers.map((customer) => (
+                    <tr className="hover:bg-slate-50" key={customer.id}>
+                      <td className="px-4 py-3 font-medium text-slate-950">
+                        <Link href={`/customers/${customer.id}`}>
+                          {customer.name}
+                        </Link>
+                      </td>
+                      <td className="px-4 py-3 text-slate-600">
+                        {customer.phone ?? "-"}
+                      </td>
+                      <td className="px-4 py-3 text-slate-600">
+                        {customer.email ?? "-"}
+                      </td>
+                      <td className="px-4 py-3">
+                        <Badge>{statusLabels[customer.status]}</Badge>
+                      </td>
+                      <td className="px-4 py-3 text-slate-600">
+                        {customer.lastContactedAt
+                          ? new Intl.DateTimeFormat("ko-KR", {
+                              dateStyle: "short",
+                              timeZone: "Asia/Seoul"
+                            }).format(new Date(customer.lastContactedAt))
+                          : "-"}
+                      </td>
+                      <td className="px-4 py-3 text-slate-600">
+                        {customer.tags.map((tag) => tag.name).join(", ") || "-"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
