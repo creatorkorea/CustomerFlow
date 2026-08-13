@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import {
   CalendarDays,
   ClipboardList,
@@ -9,15 +10,50 @@ import {
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { requirePageUser } from "@/server/auth/session";
+import { getDashboardOverview } from "@/server/dashboard/service";
 
-const stats = [
-  { label: "오늘 예약", value: "0", icon: CalendarDays },
-  { label: "신규 고객", value: "0", icon: Users },
-  { label: "후속 연락", value: "0", icon: ClipboardList },
-  { label: "미완료 상담", value: "0", icon: MessageSquareText }
-];
+function formatTime(value: string) {
+  return new Intl.DateTimeFormat("ko-KR", {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "Asia/Seoul"
+  }).format(new Date(value));
+}
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const user = await requirePageUser();
+
+  if (!user.organizationId) {
+    redirect("/login");
+  }
+
+  const overview = await getDashboardOverview({
+    organizationId: BigInt(user.organizationId)
+  });
+  const stats = [
+    {
+      label: "오늘 예약",
+      value: overview.metrics.todayReservations.toString(),
+      icon: CalendarDays
+    },
+    {
+      label: "신규 고객",
+      value: overview.metrics.newCustomers.toString(),
+      icon: Users
+    },
+    {
+      label: "후속 연락",
+      value: overview.metrics.pendingFollowUps.toString(),
+      icon: ClipboardList
+    },
+    {
+      label: "미완료 상담",
+      value: overview.metrics.openConsultations.toString(),
+      icon: MessageSquareText
+    }
+  ];
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -38,14 +74,13 @@ export default function DashboardPage() {
             <Plus aria-hidden="true" className="h-4 w-4" />
             고객 추가
           </Link>
-          <button
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-[var(--primary)] px-4 text-sm font-semibold text-white shadow-sm opacity-70"
-            disabled
-            type="button"
+          <Link
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-[var(--primary)] px-4 text-sm font-semibold text-white shadow-sm hover:bg-teal-700"
+            href="/consultations/new"
           >
             <Plus aria-hidden="true" className="h-4 w-4" />
             상담 등록
-          </button>
+          </Link>
         </div>
       </div>
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -74,9 +109,36 @@ export default function DashboardPage() {
             <CardTitle>오늘의 일정</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="rounded-md border border-dashed border-[var(--border)] bg-[var(--surface-subtle)] px-4 py-8 text-center text-sm text-slate-600">
-              아직 등록된 예약이 없습니다. 고객 등록 후 예약을 추가하세요.
-            </p>
+            {overview.todayReservations.length === 0 ? (
+              <p className="rounded-md border border-dashed border-[var(--border)] bg-[var(--surface-subtle)] px-4 py-8 text-center text-sm text-slate-600">
+                오늘 예정된 예약이 없습니다. 고객 등록 후 예약을 추가하세요.
+              </p>
+            ) : (
+              <div className="divide-y divide-[var(--border)]">
+                {overview.todayReservations.map((reservation) => (
+                  <Link
+                    className="flex items-center justify-between gap-4 py-3 hover:text-teal-700"
+                    href={`/customers/${reservation.customerId}`}
+                    key={reservation.id}
+                  >
+                    <div>
+                      <div className="font-medium text-slate-950">
+                        {reservation.title}
+                      </div>
+                      <div className="mt-1 text-sm text-slate-500">
+                        {reservation.customerName}
+                        {reservation.customerPhone
+                          ? ` / ${reservation.customerPhone}`
+                          : ""}
+                      </div>
+                    </div>
+                    <div className="shrink-0 text-sm font-semibold text-teal-700">
+                      {formatTime(reservation.startAt)}
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
         <Card>
@@ -84,12 +146,28 @@ export default function DashboardPage() {
             <CardTitle>후속 연락 필요</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <p className="text-sm text-slate-600">
-              아직 예정된 후속 연락이 없습니다.
-            </p>
-            <div className="rounded-md bg-amber-50 px-3 py-2 text-xs font-medium text-amber-800 ring-1 ring-amber-600/20">
-              상담 기능이 연결되면 후속 연락 큐가 이곳에 표시됩니다.
-            </div>
+            {overview.pendingFollowUps.length === 0 ? (
+              <p className="rounded-md border border-dashed border-[var(--border)] bg-[var(--surface-subtle)] px-4 py-8 text-center text-sm text-slate-600">
+                오늘까지 처리할 후속 연락이 없습니다.
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {overview.pendingFollowUps.map((followUp) => (
+                  <Link
+                    className="block rounded-md border border-[var(--border)] bg-white px-3 py-3 hover:border-teal-300 hover:bg-teal-50/50"
+                    href={`/customers/${followUp.customerId}`}
+                    key={followUp.id}
+                  >
+                    <div className="text-sm font-semibold text-slate-950">
+                      {followUp.title}
+                    </div>
+                    <div className="mt-1 text-xs text-slate-500">
+                      {followUp.customerName} · 마감 {formatTime(followUp.dueAt)}
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
       </section>
