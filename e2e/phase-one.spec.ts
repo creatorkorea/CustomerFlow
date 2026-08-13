@@ -156,3 +156,32 @@ test("authenticated owner can create a reservation for a customer", async ({ pag
   await expect(page).toHaveURL(/\/reservations\?customerId=\d+/);
   await expect(page.getByText(reservationTitle)).toBeVisible();
 });
+
+test("authenticated owner can create a follow-up for a customer", async ({ page }) => {
+  const customerName = `E2E 후속 ${Date.now()}`;
+  const followUpTitle = "예약 전 확인 연락";
+
+  await page.goto("/login");
+  await page.getByLabel("이메일").fill("owner@example.com");
+  await page.getByLabel("비밀번호").fill("customerflow-demo-password");
+  await page.getByRole("button", { name: "로그인" }).click();
+  await expect(page).toHaveURL(/\/dashboard/);
+
+  await page.goto("/customers/new");
+  await page.getByLabel("고객명").fill(customerName);
+  await page.getByLabel("전화번호", { exact: true }).fill("010-5555-0000");
+  await page.getByRole("button", { name: "저장" }).click();
+  await expect(page).toHaveURL(/\/customers\/\d+/);
+
+  await page.goto("/follow-ups/new");
+  await page.locator('select[name="customerId"]').selectOption({
+    label: `${customerName} / 010-5555-0000`
+  });
+  await page.getByLabel("할 일").fill(followUpTitle);
+  await page.getByLabel("마감").fill("2026-08-15T10:00");
+  await page.getByLabel("메모").fill("방문 가능 여부 재확인");
+  await page.getByRole("button", { name: "저장" }).click();
+
+  await expect(page).toHaveURL(/\/follow-ups\?customerId=\d+/);
+  await expect(page.getByText(followUpTitle)).toBeVisible();
+});
