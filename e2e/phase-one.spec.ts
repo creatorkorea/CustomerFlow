@@ -196,6 +196,10 @@ test("authenticated owner can create a follow-up for a customer", async ({ page 
   await page.goto(page.url().replace(/\/follow-ups\?customerId=(\d+)/, "/customers/$1"));
   await expect(page.getByRole("heading", { name: customerName })).toBeVisible();
   await expect(page.getByText(followUpTitle).first()).toBeVisible();
+
+  await page.goto("/notifications");
+  await expect(page.getByRole("heading", { name: "알림" })).toBeVisible();
+  await expect(page.getByText(followUpTitle).first()).toBeVisible();
 });
 
 test("authenticated owner can create a tag and assign it to a customer", async ({ page }) => {

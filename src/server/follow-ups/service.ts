@@ -249,6 +249,19 @@ export async function createFollowUp({
       }
     });
 
+    if (userId) {
+      await tx.notification.create({
+        data: {
+          organizationId,
+          userId,
+          type: "follow_up",
+          title: "후속관리 등록",
+          message: input.title,
+          linkUrl: `/follow-ups?customerId=${customerId.toString()}`
+        }
+      });
+    }
+
     return created;
   });
 

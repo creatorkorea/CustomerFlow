@@ -16,6 +16,9 @@ vi.mock("@/lib/db", () => ({
     activityLog: {
       create: vi.fn()
     },
+    notification: {
+      create: vi.fn()
+    },
     $transaction: vi.fn()
   }
 }));
@@ -89,6 +92,7 @@ describe("follow-up service", () => {
 
   it("creates a follow-up for a customer in the current organization and logs the activity", async () => {
     const activityCreate = vi.fn();
+    const notificationCreate = vi.fn();
 
     vi.mocked(prisma.customer.findFirst).mockResolvedValueOnce({
       id: 21n
@@ -123,6 +127,9 @@ describe("follow-up service", () => {
         },
         activityLog: {
           create: activityCreate
+        },
+        notification: {
+          create: notificationCreate
         }
       } as never)
     );
@@ -159,6 +166,16 @@ describe("follow-up service", () => {
         })
       })
     );
+    expect(notificationCreate).toHaveBeenCalledWith({
+      data: {
+        organizationId: 7n,
+        userId: 3n,
+        type: "follow_up",
+        title: "후속관리 등록",
+        message: "예약 전 확인 연락",
+        linkUrl: "/follow-ups?customerId=21"
+      }
+    });
     expect(result).toMatchObject({
       id: "101",
       organizationId: "7",
