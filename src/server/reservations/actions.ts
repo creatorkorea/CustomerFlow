@@ -1,11 +1,18 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { requireUser } from "@/server/auth/session";
 import type { ReservationActionState } from "@/server/reservations/action-state";
-import { createReservation } from "@/server/reservations/service";
-import { createReservationSchema } from "@/server/reservations/validation";
+import {
+  createReservation,
+  updateReservationStatus
+} from "@/server/reservations/service";
+import {
+  createReservationSchema,
+  updateReservationStatusSchema
+} from "@/server/reservations/validation";
 
 function formDataToObject(formData: FormData) {
   return Object.fromEntries(formData.entries());
@@ -49,4 +56,29 @@ export async function createReservationAction(
   });
 
   redirect(`/reservations?customerId=${reservation.customerId}`);
+}
+
+export async function updateReservationStatusAction(formData: FormData) {
+  const user = await requireUser();
+  const reservationId = formData.get("reservationId");
+  const parsed = updateReservationStatusSchema.safeParse({
+    status: formData.get("status")
+  });
+
+  if (
+    !parsed.success ||
+    !user.organizationId ||
+    typeof reservationId !== "string"
+  ) {
+    return;
+  }
+
+  await updateReservationStatus({
+    reservationId: BigInt(reservationId),
+    organizationId: BigInt(user.organizationId),
+    userId: BigInt(user.id),
+    input: parsed.data
+  });
+
+  revalidatePath("/reservations");
 }

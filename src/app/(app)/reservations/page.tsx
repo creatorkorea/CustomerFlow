@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { requireOrganizationId } from "@/server/auth/session";
+import { updateReservationStatusAction } from "@/server/reservations/actions";
 import { listReservations } from "@/server/reservations/service";
 import { listReservationsSchema } from "@/server/reservations/validation";
 
@@ -171,6 +172,7 @@ export default async function ReservationsPage({
                     <th className="px-4 py-3">시간</th>
                     <th className="px-4 py-3">장소</th>
                     <th className="px-4 py-3">담당자</th>
+                    <th className="px-4 py-3">처리</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[var(--border)]">
@@ -211,6 +213,55 @@ export default async function ReservationsPage({
                       </td>
                       <td className="px-4 py-3 text-slate-600">
                         {reservation.userName ?? "-"}
+                      </td>
+                      <td className="px-4 py-3">
+                        {["scheduled", "in_progress"].includes(
+                          reservation.status
+                        ) ? (
+                          <div className="flex flex-wrap gap-2">
+                            {reservation.status === "scheduled" ? (
+                              <form action={updateReservationStatusAction}>
+                                <input
+                                  name="reservationId"
+                                  type="hidden"
+                                  value={reservation.id}
+                                />
+                                <input
+                                  name="status"
+                                  type="hidden"
+                                  value="in_progress"
+                                />
+                                <Button size="sm" type="submit" variant="outline">
+                                  진행 시작
+                                </Button>
+                              </form>
+                            ) : null}
+                            <form action={updateReservationStatusAction}>
+                              <input
+                                name="reservationId"
+                                type="hidden"
+                                value={reservation.id}
+                              />
+                              <input name="status" type="hidden" value="completed" />
+                              <Button size="sm" type="submit" variant="outline">
+                                완료 처리
+                              </Button>
+                            </form>
+                            <form action={updateReservationStatusAction}>
+                              <input
+                                name="reservationId"
+                                type="hidden"
+                                value={reservation.id}
+                              />
+                              <input name="status" type="hidden" value="cancelled" />
+                              <Button size="sm" type="submit" variant="ghost">
+                                취소
+                              </Button>
+                            </form>
+                          </div>
+                        ) : (
+                          <span className="text-xs text-slate-500">처리됨</span>
+                        )}
                       </td>
                     </tr>
                   ))}

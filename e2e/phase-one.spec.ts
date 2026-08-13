@@ -159,6 +159,10 @@ test("authenticated owner can create a reservation for a customer", async ({ pag
 
   await expect(page).toHaveURL(/\/reservations\?customerId=\d+/);
   await expect(page.getByText(reservationTitle)).toBeVisible();
+  await page.getByRole("button", { name: "완료 처리" }).first().click();
+  await expect(
+    page.getByRole("row", { name: new RegExp(`${reservationTitle}.*완료`) })
+  ).toBeVisible();
 
   await page.goto(page.url().replace(/\/reservations\?customerId=(\d+)/, "/customers/$1"));
   await expect(page.getByRole("heading", { name: customerName })).toBeVisible();

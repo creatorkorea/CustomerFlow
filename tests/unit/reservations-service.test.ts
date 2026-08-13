@@ -5,6 +5,7 @@ vi.mock("@/lib/db", () => ({
     reservation: {
       count: vi.fn(),
       create: vi.fn(),
+      findFirst: vi.fn(),
       findMany: vi.fn()
     },
     customer: {
@@ -21,7 +22,8 @@ vi.mock("@/lib/db", () => ({
 import { prisma } from "@/lib/db";
 import {
   createReservation,
-  listReservations
+  listReservations,
+  updateReservationStatus
 } from "@/server/reservations/service";
 
 describe("reservation service", () => {
@@ -178,6 +180,111 @@ describe("reservation service", () => {
       customerId: "21",
       customerName: "김철수",
       status: "scheduled"
+    });
+  });
+
+  it("updates a reservation status only inside the current organization and logs the activity", async () => {
+    const reservationUpdate = vi.fn().mockResolvedValueOnce({
+      id: 81n,
+      organizationId: 7n,
+      customerId: 21n,
+      userId: 3n,
+      title: "방문 설치 예약",
+      startAt: new Date("2026-08-14T01:00:00.000Z"),
+      endAt: new Date("2026-08-14T02:00:00.000Z"),
+      location: "서울 강남구",
+      memo: null,
+      status: "completed",
+      createdAt: new Date("2026-08-13T00:00:00.000Z"),
+      updatedAt: new Date("2026-08-13T01:00:00.000Z"),
+      customer: {
+        id: 21n,
+        name: "김철수",
+        phone: "010-1111-1111"
+      },
+      user: {
+        id: 3n,
+        name: "홍길동"
+      }
+    });
+    const customerUpdate = vi.fn();
+    const activityCreate = vi.fn();
+
+    vi.mocked(prisma.reservation.findFirst).mockResolvedValueOnce({
+      id: 81n,
+      customerId: 21n
+    } as never);
+    vi.mocked(prisma.$transaction).mockImplementationOnce(async (callback) =>
+      callback({
+        reservation: {
+          update: reservationUpdate
+        },
+        customer: {
+          update: customerUpdate
+        },
+        activityLog: {
+          create: activityCreate
+        }
+      } as never)
+    );
+
+    const result = await updateReservationStatus({
+      reservationId: 81n,
+      organizationId: 7n,
+      userId: 3n,
+      input: {
+        status: "completed"
+      }
+    });
+
+    expect(prisma.reservation.findFirst).toHaveBeenCalledWith({
+      where: {
+        id: 81n,
+        organizationId: 7n,
+        deletedAt: null
+      },
+      select: {
+        id: true,
+        customerId: true
+      }
+    });
+    expect(reservationUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          id: 81n
+        },
+        data: {
+          status: "completed"
+        }
+      })
+    );
+    expect(customerUpdate).toHaveBeenCalledWith({
+      where: {
+        id: 21n
+      },
+      data: {
+        status: "completed"
+      }
+    });
+    expect(activityCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          organizationId: 7n,
+          userId: 3n,
+          entityType: "RESERVATION",
+          entityId: 81n,
+          action: "RESERVATION_STATUS_UPDATED",
+          metadata: {
+            customerId: "21",
+            status: "completed",
+            source: "reservation-service"
+          }
+        })
+      })
+    );
+    expect(result).toMatchObject({
+      id: "81",
+      status: "completed"
     });
   });
 });

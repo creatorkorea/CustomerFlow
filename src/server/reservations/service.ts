@@ -3,7 +3,8 @@ import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import type {
   CreateReservationInput,
-  ListReservationsInput
+  ListReservationsInput,
+  UpdateReservationStatusInput
 } from "@/server/reservations/validation";
 import { AppError } from "@/server/shared/http-errors";
 
@@ -206,6 +207,106 @@ export async function createReservation({
     });
 
     return created;
+  });
+
+  return serializeReservation(reservation as ReservationWithRelations);
+}
+
+function customerStatusForReservationStatus(
+  status: UpdateReservationStatusInput["status"]
+) {
+  if (status === "scheduled" || status === "in_progress") {
+    return "reserved" as const;
+  }
+
+  if (status === "completed" || status === "no_show") {
+    return "completed" as const;
+  }
+
+  return null;
+}
+
+export async function updateReservationStatus({
+  reservationId,
+  organizationId,
+  userId,
+  input
+}: {
+  reservationId: bigint;
+  organizationId: bigint;
+  userId?: bigint;
+  input: UpdateReservationStatusInput;
+}) {
+  const existing = await prisma.reservation.findFirst({
+    where: {
+      id: reservationId,
+      organizationId,
+      deletedAt: null
+    },
+    select: {
+      id: true,
+      customerId: true
+    }
+  });
+
+  if (!existing) {
+    throw new AppError("NOT_FOUND", "예약을 찾을 수 없습니다.", 404);
+  }
+
+  const customerStatus = customerStatusForReservationStatus(input.status);
+
+  const reservation = await prisma.$transaction(async (tx) => {
+    const updated = await tx.reservation.update({
+      where: {
+        id: reservationId
+      },
+      data: {
+        status: input.status
+      },
+      include: {
+        customer: {
+          select: {
+            id: true,
+            name: true,
+            phone: true
+          }
+        },
+        user: {
+          select: {
+            id: true,
+            name: true
+          }
+        }
+      }
+    });
+
+    if (customerStatus) {
+      await tx.customer.update({
+        where: {
+          id: existing.customerId
+        },
+        data: {
+          status: customerStatus
+        }
+      });
+    }
+
+    await tx.activityLog.create({
+      data: {
+        organizationId,
+        userId,
+        entityType: "RESERVATION",
+        entityId: reservationId,
+        action: "RESERVATION_STATUS_UPDATED",
+        metadata: {
+          customerId: existing.customerId.toString(),
+          status: input.status,
+          source: "reservation-service"
+        }
+      }
+    });
+
+    return updated;
   });
 
   return serializeReservation(reservation as ReservationWithRelations);

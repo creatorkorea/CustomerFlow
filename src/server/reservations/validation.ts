@@ -29,6 +29,10 @@ export const createReservationSchema = z
     path: ["endAt"]
   });
 
+export const updateReservationStatusSchema = z.object({
+  status: reservationStatusSchema
+});
+
 export const listReservationsSchema = z
   .object({
     customerId: z.string().trim().regex(/^\d+$/).optional(),
@@ -48,4 +52,7 @@ export const listReservationsSchema = z
   );
 
 export type CreateReservationInput = z.infer<typeof createReservationSchema>;
+export type UpdateReservationStatusInput = z.infer<
+  typeof updateReservationStatusSchema
+>;
 export type ListReservationsInput = z.infer<typeof listReservationsSchema>;
