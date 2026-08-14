@@ -290,7 +290,7 @@ export async function createFollowUp({
           type: "follow_up",
           title: "후속관리 등록",
           message: input.title,
-          linkUrl: `/follow-ups?customerId=${customerId.toString()}`
+          linkUrl: `/follow-ups/${created.id.toString()}`
         }
       });
     }
@@ -395,7 +395,7 @@ export async function updateFollowUpStatus({
           type: "follow_up",
           title: "후속관리 상태 변경",
           message: `${updated.title}: ${input.status}`,
-          linkUrl: `/follow-ups?customerId=${existing.customerId.toString()}`
+          linkUrl: `/follow-ups/${updated.id.toString()}`
         }
       });
     }

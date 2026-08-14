@@ -232,7 +232,7 @@ describe("reservation service", () => {
         type: "reservation",
         title: "예약 등록",
         message: "방문 설치 예약",
-        linkUrl: "/reservations?customerId=21"
+        linkUrl: "/reservations/81"
       }
     });
     expect(result).toMatchObject({
@@ -389,7 +389,7 @@ describe("reservation service", () => {
         type: "reservation",
         title: "예약 상태 변경",
         message: "방문 설치 예약: completed",
-        linkUrl: "/reservations?customerId=21"
+        linkUrl: "/reservations/81"
       }
     });
     expect(result).toMatchObject({

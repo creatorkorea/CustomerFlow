@@ -462,8 +462,9 @@ test("authenticated owner can create a follow-up for a customer", async ({ page 
   await expect(page.getByRole("heading", { name: "알림" })).toBeVisible();
   await expect(page.getByText(followUpTitle).first()).toBeVisible();
   await page.getByRole("link", { name: "관련 화면 열기" }).first().click();
-  await expect(page).toHaveURL(/\/follow-ups\?customerId=\d+/);
-  await expect(page.locator('[data-desktop-table="follow-ups"]').getByText(followUpTitle)).toBeVisible();
+  await expect(page).toHaveURL(/\/follow-ups\/\d+/);
+  await expect(page.getByRole("heading", { name: "후속관리 상세" })).toBeVisible();
+  await expect(page.getByText(updatedFollowUpTitle).first()).toBeVisible();
 });
 
 test("authenticated owner can create a tag and assign it to a customer", async ({ page }) => {

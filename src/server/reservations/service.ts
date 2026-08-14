@@ -246,7 +246,7 @@ export async function createReservation({
           type: "reservation",
           title: "예약 등록",
           message: input.title,
-          linkUrl: `/reservations?customerId=${customerId.toString()}`
+          linkUrl: `/reservations/${created.id.toString()}`
         }
       });
     }
@@ -371,7 +371,7 @@ export async function updateReservationStatus({
           type: "reservation",
           title: "예약 상태 변경",
           message: `${updated.title}: ${input.status}`,
-          linkUrl: `/reservations?customerId=${existing.customerId.toString()}`
+          linkUrl: `/reservations/${updated.id.toString()}`
         }
       });
     }

@@ -223,7 +223,7 @@ describe("follow-up service", () => {
         type: "follow_up",
         title: "후속관리 등록",
         message: "예약 전 확인 연락",
-        linkUrl: "/follow-ups?customerId=21"
+        linkUrl: "/follow-ups/101"
       }
     });
     expect(result).toMatchObject({
@@ -359,7 +359,7 @@ describe("follow-up service", () => {
         type: "follow_up",
         title: "후속관리 상태 변경",
         message: "예약 전 확인 연락: completed",
-        linkUrl: "/follow-ups?customerId=21"
+        linkUrl: "/follow-ups/101"
       }
     });
     expect(result).toMatchObject({
