@@ -187,7 +187,7 @@ export default async function ConsultationsPage({
                     <div className="min-w-0">
                       <Link
                         className="font-semibold text-slate-950 hover:text-teal-700"
-                        href={`/customers/${consultation.customerId}`}
+                        href={`/consultations/${consultation.id}`}
                       >
                         {consultation.customerName}
                       </Link>
@@ -224,6 +224,12 @@ export default async function ConsultationsPage({
                     </div>
                   </div>
                   <div className="mt-4 grid gap-2 sm:grid-cols-2">
+                    <Link
+                      className="inline-flex h-9 items-center justify-center rounded-md border border-[var(--border)] bg-white px-3 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
+                      href={`/consultations/${consultation.id}`}
+                    >
+                      상세 보기
+                    </Link>
                     <Link
                       className="inline-flex h-9 items-center justify-center rounded-md border border-[var(--border)] bg-white px-3 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
                       href={`/reservations/new?customerId=${consultation.customerId}`}
@@ -263,7 +269,7 @@ export default async function ConsultationsPage({
                       <td className="px-4 py-3">
                         <Link
                           className="font-medium text-slate-950 hover:text-teal-700"
-                          href={`/customers/${consultation.customerId}`}
+                          href={`/consultations/${consultation.id}`}
                         >
                           {consultation.customerName}
                         </Link>
@@ -293,6 +299,12 @@ export default async function ConsultationsPage({
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex flex-wrap gap-2">
+                          <Link
+                            className="inline-flex h-9 items-center justify-center rounded-md border border-[var(--border)] bg-white px-3 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
+                            href={`/consultations/${consultation.id}`}
+                          >
+                            상세 보기
+                          </Link>
                           <Link
                             className="inline-flex h-9 items-center justify-center rounded-md border border-[var(--border)] bg-white px-3 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
                             href={`/reservations/new?customerId=${consultation.customerId}`}

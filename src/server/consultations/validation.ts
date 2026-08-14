@@ -58,7 +58,16 @@ export const listConsultationsSchema = z.object({
   pageSize: z.coerce.number().int().min(1).max(100).default(20)
 });
 
+export const updateConsultationSchema = z.object({
+  status: consultationStatusSchema,
+  result: optionalText,
+  nextAction: optionalText
+});
+
 export type CreateConsultationInput = z.infer<
   typeof createConsultationSchema
 >;
 export type ListConsultationsInput = z.infer<typeof listConsultationsSchema>;
+export type UpdateConsultationInput = z.infer<
+  typeof updateConsultationSchema
+>;

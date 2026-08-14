@@ -3,7 +3,8 @@ import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import type {
   CreateConsultationInput,
-  ListConsultationsInput
+  ListConsultationsInput,
+  UpdateConsultationInput
 } from "@/server/consultations/validation";
 import { AppError } from "@/server/shared/http-errors";
 
@@ -136,6 +137,43 @@ export async function listConsultations({
   };
 }
 
+export async function getConsultation({
+  consultationId,
+  organizationId
+}: {
+  consultationId: bigint;
+  organizationId: bigint;
+}) {
+  const consultation = await prisma.consultation.findFirst({
+    where: {
+      id: consultationId,
+      organizationId,
+      deletedAt: null
+    },
+    include: {
+      customer: {
+        select: {
+          id: true,
+          name: true,
+          phone: true
+        }
+      },
+      user: {
+        select: {
+          id: true,
+          name: true
+        }
+      }
+    }
+  });
+
+  if (!consultation) {
+    throw new AppError("NOT_FOUND", "상담을 찾을 수 없습니다.", 404);
+  }
+
+  return serializeConsultation(consultation as ConsultationWithRelations);
+}
+
 export async function createConsultation({
   organizationId,
   userId,
@@ -220,4 +258,60 @@ export async function createConsultation({
   return serializeConsultation(
     consultationWithRelations as ConsultationWithRelations
   );
+}
+
+export async function updateConsultation({
+  consultationId,
+  organizationId,
+  userId,
+  input
+}: {
+  consultationId: bigint;
+  organizationId: bigint;
+  userId?: bigint;
+  input: UpdateConsultationInput;
+}) {
+  const consultation = await prisma.consultation.findFirst({
+    where: {
+      id: consultationId,
+      organizationId,
+      deletedAt: null
+    },
+    select: {
+      id: true
+    }
+  });
+
+  if (!consultation) {
+    throw new AppError("NOT_FOUND", "상담을 찾을 수 없습니다.", 404);
+  }
+
+  const updated = await prisma.consultation.update({
+    where: {
+      id: consultationId
+    },
+    data: {
+      status: input.status,
+      result: input.result ?? null,
+      nextAction: input.nextAction ?? null,
+      userId
+    },
+    include: {
+      customer: {
+        select: {
+          id: true,
+          name: true,
+          phone: true
+        }
+      },
+      user: {
+        select: {
+          id: true,
+          name: true
+        }
+      }
+    }
+  });
+
+  return serializeConsultation(updated as ConsultationWithRelations);
 }

@@ -220,6 +220,8 @@ test("authenticated owner can update and soft delete a customer", async ({ page 
 });
 
 test("authenticated owner can create a consultation for a customer", async ({ page }) => {
+  test.setTimeout(60_000);
+
   const customerName = e2eName("상담");
   const consultationContent = "설치 가능 시간 문의";
 
@@ -233,7 +235,7 @@ test("authenticated owner can create a consultation for a customer", async ({ pa
   await page.getByLabel("고객명").fill(customerName);
   await page.getByLabel("전화번호", { exact: true }).fill("010-7777-0000");
   await page.getByRole("button", { name: "저장" }).click();
-  await expect(page).toHaveURL(/\/customers\/\d+/);
+  await expect(page).toHaveURL(/\/customers\/\d+/, { timeout: 15000 });
 
   await page.getByRole("link", { name: "상담 등록" }).click();
   await expect(page).toHaveURL(/\/consultations\/new\?customerId=\d+/);
@@ -244,15 +246,51 @@ test("authenticated owner can create a consultation for a customer", async ({ pa
   await page.getByRole("button", { name: "저장" }).click();
 
   await expect(page).toHaveURL(/\/consultations\?customerId=\d+/);
+  const customerId = new URL(page.url()).searchParams.get("customerId");
+  if (!customerId) {
+    throw new Error("Expected created consultation customerId in URL");
+  }
+  expect(customerId).toMatch(/^\d+$/);
   await expect(page.getByRole("textbox", { name: "고객 검색" })).toHaveValue(
     new RegExp(customerName)
   );
   const consultationsTable = page.locator('[data-desktop-table="consultations"]');
   await expect(consultationsTable.getByText(consultationContent)).toBeVisible();
-  await expect(consultationsTable.getByRole("link", { name: "예약 생성" }).first()).toBeVisible();
-  await expect(consultationsTable.getByRole("link", { name: "후속관리 생성" }).first()).toBeVisible();
+  await page.keyboard.press("Escape");
+  const consultationDetailHref = await consultationsTable
+    .getByRole("link", { name: "상세 보기" })
+    .first()
+    .getAttribute("href");
+  expect(consultationDetailHref).toMatch(/^\/consultations\/\d+$/);
+  await page.goto(consultationDetailHref ?? "/consultations", {
+    waitUntil: "domcontentloaded"
+  });
+  await expect(page).toHaveURL(/\/consultations\/\d+/);
+  await expect(page.getByRole("heading", { name: "상담 상세" })).toBeVisible();
+  await expect(page.getByText(consultationContent).first()).toBeVisible();
+  await page.getByLabel("상태").selectOption("completed");
+  await page.getByLabel("상담 결과").fill("예약 확정 완료");
+  await page.getByLabel("다음 액션").fill("");
+  await page.getByRole("button", { name: "변경 저장" }).click();
+  await expect(page.getByText("예약 확정 완료").first()).toBeVisible();
+  await expect(page.getByText("완료").first()).toBeVisible();
 
-  await page.goto(page.url().replace(/\/consultations\?customerId=(\d+)/, "/customers/$1"));
+  await page.goto(`/consultations?customerId=${customerId}`);
+  await expect(page.getByRole("heading", { name: "상담" })).toBeVisible();
+  const refreshedConsultationsTable = page.locator(
+    '[data-desktop-table="consultations"]'
+  );
+  await expect(
+    refreshedConsultationsTable.getByRole("link", { name: "상세 보기" }).first()
+  ).toBeVisible();
+  await expect(
+    refreshedConsultationsTable.getByRole("link", { name: "예약 생성" }).first()
+  ).toBeVisible();
+  await expect(
+    refreshedConsultationsTable.getByRole("link", { name: "후속관리 생성" }).first()
+  ).toBeVisible();
+
+  await page.goto(`/customers/${customerId}`);
   await expect(page.getByRole("heading", { name: customerName })).toBeVisible();
   await expect(page.getByText(consultationContent).first()).toBeVisible();
   await page.locator('a[href$="?timelineType=consultation"]').click();
