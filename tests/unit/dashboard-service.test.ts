@@ -14,10 +14,12 @@ vi.mock("@/lib/db", () => ({
       findMany: vi.fn()
     },
     consultation: {
-      count: vi.fn()
+      count: vi.fn(),
+      findMany: vi.fn()
     },
     notification: {
-      count: vi.fn()
+      count: vi.fn(),
+      findMany: vi.fn()
     },
     activityLog: {
       findMany: vi.fn()
@@ -41,6 +43,8 @@ describe("dashboard service", () => {
     vi.mocked(prisma.notification.count).mockResolvedValueOnce(6);
     vi.mocked(prisma.reservation.findMany).mockResolvedValueOnce([]);
     vi.mocked(prisma.followUp.findMany).mockResolvedValueOnce([]);
+    vi.mocked(prisma.consultation.findMany).mockResolvedValueOnce([]);
+    vi.mocked(prisma.notification.findMany).mockResolvedValueOnce([]);
     vi.mocked(prisma.activityLog.findMany).mockResolvedValueOnce([]);
 
     const result = await getDashboardOverview({
@@ -131,6 +135,30 @@ describe("dashboard service", () => {
         }
       }
     ] as never);
+    vi.mocked(prisma.consultation.findMany).mockResolvedValueOnce([
+      {
+        id: 111n,
+        customerId: 23n,
+        content: "견적 문의 후 방문 예약 검토",
+        nextAction: "내일 오전 재연락",
+        status: "consulting",
+        createdAt: new Date("2026-08-13T07:30:00.000Z"),
+        customer: {
+          name: "박민수",
+          phone: "010-2222-2222"
+        }
+      }
+    ] as never);
+    vi.mocked(prisma.notification.findMany).mockResolvedValueOnce([
+      {
+        id: 301n,
+        type: "follow_up_due",
+        title: "후속 연락 예정",
+        message: "김철수 고객에게 연락할 시간입니다.",
+        linkUrl: "/customers/21",
+        createdAt: new Date("2026-08-13T07:45:00.000Z")
+      }
+    ] as never);
     vi.mocked(prisma.activityLog.findMany).mockResolvedValueOnce([
       {
         id: 201n,
@@ -173,6 +201,28 @@ describe("dashboard service", () => {
         title: "예약 전 확인 연락",
         dueAt: "2026-08-13T07:00:00.000Z",
         status: "pending"
+      }
+    ]);
+    expect(result.recentConsultations).toEqual([
+      {
+        id: "111",
+        customerId: "23",
+        customerName: "박민수",
+        customerPhone: "010-2222-2222",
+        content: "견적 문의 후 방문 예약 검토",
+        nextAction: "내일 오전 재연락",
+        status: "consulting",
+        createdAt: "2026-08-13T07:30:00.000Z"
+      }
+    ]);
+    expect(result.unreadNotifications).toEqual([
+      {
+        id: "301",
+        type: "follow_up_due",
+        title: "후속 연락 예정",
+        message: "김철수 고객에게 연락할 시간입니다.",
+        linkUrl: "/customers/21",
+        createdAt: "2026-08-13T07:45:00.000Z"
       }
     ]);
     expect(result.recentActivities).toEqual([

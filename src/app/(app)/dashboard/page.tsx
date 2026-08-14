@@ -22,6 +22,14 @@ function formatTime(value: string) {
   }).format(new Date(value));
 }
 
+function formatDateTime(value: string) {
+  return new Intl.DateTimeFormat("ko-KR", {
+    dateStyle: "short",
+    timeStyle: "short",
+    timeZone: "Asia/Seoul"
+  }).format(new Date(value));
+}
+
 export default async function DashboardPage() {
   const user = await requirePageUser();
 
@@ -94,7 +102,7 @@ export default async function DashboardPage() {
           const Icon = stat.icon;
 
           return (
-            <Card key={stat.label}>
+            <Card className="min-w-0" key={stat.label}>
               <CardHeader className="flex flex-row items-center justify-between space-y-0">
                 <CardTitle>{stat.label}</CardTitle>
                 <div className="flex h-9 w-9 items-center justify-center rounded-md bg-teal-50 text-teal-700">
@@ -109,8 +117,8 @@ export default async function DashboardPage() {
           );
         })}
       </section>
-      <section className="grid gap-4 xl:grid-cols-[1fr_360px_360px]">
-        <Card>
+      <section className="grid gap-4 xl:grid-cols-2">
+        <Card className="min-w-0">
           <CardHeader>
             <CardTitle>오늘의 일정</CardTitle>
           </CardHeader>
@@ -127,11 +135,11 @@ export default async function DashboardPage() {
                     href={`/customers/${reservation.customerId}`}
                     key={reservation.id}
                   >
-                    <div>
-                      <div className="font-medium text-slate-950">
+                    <div className="min-w-0">
+                      <div className="truncate font-medium text-slate-950">
                         {reservation.title}
                       </div>
-                      <div className="mt-1 text-sm text-slate-500">
+                      <div className="mt-1 truncate text-sm text-slate-500">
                         {reservation.customerName}
                         {reservation.customerPhone
                           ? ` / ${reservation.customerPhone}`
@@ -147,7 +155,50 @@ export default async function DashboardPage() {
             )}
           </CardContent>
         </Card>
-        <Card>
+        <Card className="min-w-0">
+          <CardHeader>
+            <CardTitle>최근 상담</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {overview.recentConsultations.length === 0 ? (
+              <p className="rounded-md border border-dashed border-[var(--border)] bg-[var(--surface-subtle)] px-4 py-8 text-center text-sm text-slate-600">
+                최근 상담 기록이 없습니다. 상담 등록으로 고객 흐름을 시작하세요.
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {overview.recentConsultations.map((consultation) => (
+                  <Link
+                    className="block rounded-md border border-[var(--border)] bg-white px-3 py-3 transition-colors hover:border-teal-300 hover:bg-teal-50/50"
+                    href={`/customers/${consultation.customerId}`}
+                    key={consultation.id}
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="truncate text-sm font-semibold text-slate-950">
+                          {consultation.customerName}
+                          {consultation.customerPhone
+                            ? ` / ${consultation.customerPhone}`
+                            : ""}
+                        </div>
+                        <div className="mt-1 line-clamp-2 text-sm text-slate-600">
+                          {consultation.content}
+                        </div>
+                      </div>
+                      <Badge variant="neutral">{consultation.status}</Badge>
+                    </div>
+                    <div className="mt-2 flex flex-col gap-1 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between">
+                      <span>
+                        다음 액션: {consultation.nextAction ?? "미정"}
+                      </span>
+                      <span>{formatDateTime(consultation.createdAt)}</span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+        <Card className="min-w-0">
           <CardHeader>
             <CardTitle>후속 연락 필요</CardTitle>
           </CardHeader>
@@ -164,10 +215,10 @@ export default async function DashboardPage() {
                     href={`/customers/${followUp.customerId}`}
                     key={followUp.id}
                   >
-                    <div className="text-sm font-semibold text-slate-950">
+                    <div className="truncate text-sm font-semibold text-slate-950">
                       {followUp.title}
                     </div>
-                    <div className="mt-1 text-xs text-slate-500">
+                    <div className="mt-1 truncate text-xs text-slate-500">
                       {followUp.customerName} · 마감 {formatTime(followUp.dueAt)}
                     </div>
                   </Link>
@@ -176,7 +227,44 @@ export default async function DashboardPage() {
             )}
           </CardContent>
         </Card>
-        <Card>
+        <Card className="min-w-0">
+          <CardHeader>
+            <CardTitle>미확인 알림</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {overview.unreadNotifications.length === 0 ? (
+              <p className="rounded-md border border-dashed border-[var(--border)] bg-[var(--surface-subtle)] px-4 py-8 text-center text-sm text-slate-600">
+                확인하지 않은 알림이 없습니다.
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {overview.unreadNotifications.map((notification) => (
+                  <Link
+                    className="block rounded-md border border-[var(--border)] bg-white px-3 py-3 transition-colors hover:border-teal-300 hover:bg-teal-50/50"
+                    href={notification.linkUrl ?? "/notifications"}
+                    key={notification.id}
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="truncate text-sm font-semibold text-slate-950">
+                          {notification.title}
+                        </div>
+                        <div className="mt-1 line-clamp-2 text-sm text-slate-600">
+                          {notification.message}
+                        </div>
+                      </div>
+                      <Badge variant="neutral">{notification.type}</Badge>
+                    </div>
+                    <div className="mt-2 text-xs text-slate-500">
+                      {formatDateTime(notification.createdAt)}
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+        <Card className="min-w-0">
           <CardHeader>
             <CardTitle>최근 활동</CardTitle>
           </CardHeader>
@@ -195,18 +283,14 @@ export default async function DashboardPage() {
                     key={activity.id}
                   >
                     <div className="flex items-center justify-between gap-3">
-                      <div className="text-sm font-semibold text-slate-950">
+                      <div className="min-w-0 truncate text-sm font-semibold text-slate-950">
                         {activity.actionLabel}
                       </div>
                       <Badge variant="neutral">{activity.entityLabel}</Badge>
                     </div>
-                    <div className="mt-1 text-xs text-slate-500">
+                    <div className="mt-1 truncate text-xs text-slate-500">
                       {activity.userName ?? "시스템"} ·{" "}
-                      {new Intl.DateTimeFormat("ko-KR", {
-                        dateStyle: "short",
-                        timeStyle: "short",
-                        timeZone: "Asia/Seoul"
-                      }).format(new Date(activity.createdAt))}
+                      {formatDateTime(activity.createdAt)}
                     </div>
                   </Link>
                 ))}

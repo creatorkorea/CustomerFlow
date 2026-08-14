@@ -49,6 +49,28 @@ type RecentActivity = {
   } | null;
 };
 
+type RecentConsultation = {
+  id: bigint;
+  customerId: bigint;
+  content: string;
+  nextAction: string | null;
+  status: "new" | "consulting" | "quote" | "reserved" | "closed" | "on_hold";
+  createdAt: Date;
+  customer: {
+    name: string;
+    phone: string | null;
+  };
+};
+
+type UnreadNotification = {
+  id: bigint;
+  type: string;
+  title: string;
+  message: string;
+  linkUrl: string | null;
+  createdAt: Date;
+};
+
 function getKstDayRange(now: Date) {
   const kstOffsetMs = 9 * 60 * 60 * 1000;
   const kstNow = new Date(now.getTime() + kstOffsetMs);
@@ -107,108 +129,169 @@ function serializeActivity(activity: RecentActivity) {
   };
 }
 
+function serializeConsultation(consultation: RecentConsultation) {
+  return {
+    id: consultation.id.toString(),
+    customerId: consultation.customerId.toString(),
+    customerName: consultation.customer.name,
+    customerPhone: consultation.customer.phone,
+    content: consultation.content,
+    nextAction: consultation.nextAction,
+    status: consultation.status,
+    createdAt: consultation.createdAt.toISOString()
+  };
+}
+
+function serializeNotification(notification: UnreadNotification) {
+  return {
+    id: notification.id.toString(),
+    type: notification.type,
+    title: notification.title,
+    message: notification.message,
+    linkUrl: notification.linkUrl,
+    createdAt: notification.createdAt.toISOString()
+  };
+}
+
 export async function getDashboardOverview({
   organizationId,
   now = new Date()
 }: DashboardOverviewParams) {
   const todayRange = getKstDayRange(now);
 
-  const todayReservations = await prisma.reservation.count({
-    where: {
-      organizationId,
-      deletedAt: null,
-      status: {
-        in: ["scheduled", "in_progress"]
+  const [
+    todayReservations,
+    newCustomers,
+    pendingFollowUps,
+    openConsultations,
+    unreadNotifications,
+    reservationQueue,
+    followUpQueue,
+    consultationQueue,
+    notificationQueue,
+    recentActivities
+  ] = await Promise.all([
+    prisma.reservation.count({
+      where: {
+        organizationId,
+        deletedAt: null,
+        status: {
+          in: ["scheduled", "in_progress"]
+        },
+        startAt: todayRange
+      }
+    }),
+    prisma.customer.count({
+      where: {
+        organizationId,
+        deletedAt: null,
+        createdAt: todayRange
+      }
+    }),
+    prisma.followUp.count({
+      where: {
+        organizationId,
+        deletedAt: null,
+        status: "pending",
+        dueAt: {
+          lt: todayRange.lt
+        }
+      }
+    }),
+    prisma.consultation.count({
+      where: {
+        organizationId,
+        deletedAt: null,
+        status: {
+          in: ["new", "consulting", "quote", "reserved", "on_hold"]
+        }
+      }
+    }),
+    prisma.notification.count({
+      where: {
+        organizationId,
+        readAt: null
+      }
+    }),
+    prisma.reservation.findMany({
+      where: {
+        organizationId,
+        deletedAt: null,
+        status: {
+          in: ["scheduled", "in_progress"]
+        },
+        startAt: todayRange
       },
-      startAt: todayRange
-    }
-  });
-  const newCustomers = await prisma.customer.count({
-    where: {
-      organizationId,
-      deletedAt: null,
-      createdAt: todayRange
-    }
-  });
-  const pendingFollowUps = await prisma.followUp.count({
-    where: {
-      organizationId,
-      deletedAt: null,
-      status: "pending",
-      dueAt: {
-        lt: todayRange.lt
-      }
-    }
-  });
-  const openConsultations = await prisma.consultation.count({
-    where: {
-      organizationId,
-      deletedAt: null,
-      status: {
-        in: ["new", "consulting", "quote", "reserved", "on_hold"]
-      }
-    }
-  });
-  const unreadNotifications = await prisma.notification.count({
-    where: {
-      organizationId,
-      readAt: null
-    }
-  });
-  const reservationQueue = await prisma.reservation.findMany({
-    where: {
-      organizationId,
-      deletedAt: null,
-      status: {
-        in: ["scheduled", "in_progress"]
+      include: {
+        customer: {
+          select: {
+            name: true,
+            phone: true
+          }
+        }
       },
-      startAt: todayRange
-    },
-    include: {
-      customer: {
-        select: {
-          name: true,
-          phone: true
+      orderBy: [{ startAt: "asc" }, { id: "desc" }],
+      take: 5
+    }),
+    prisma.followUp.findMany({
+      where: {
+        organizationId,
+        deletedAt: null,
+        status: "pending",
+        dueAt: {
+          lt: todayRange.lt
         }
-      }
-    },
-    orderBy: [{ startAt: "asc" }, { id: "desc" }],
-    take: 5
-  });
-  const followUpQueue = await prisma.followUp.findMany({
-    where: {
-      organizationId,
-      deletedAt: null,
-      status: "pending",
-      dueAt: {
-        lt: todayRange.lt
-      }
-    },
-    include: {
-      customer: {
-        select: {
-          name: true,
-          phone: true
+      },
+      include: {
+        customer: {
+          select: {
+            name: true,
+            phone: true
+          }
         }
-      }
-    },
-    orderBy: [{ dueAt: "asc" }, { id: "desc" }],
-    take: 5
-  });
-  const recentActivities = await prisma.activityLog.findMany({
-    where: {
-      organizationId
-    },
-    include: {
-      user: {
-        select: {
-          name: true
+      },
+      orderBy: [{ dueAt: "asc" }, { id: "desc" }],
+      take: 5
+    }),
+    prisma.consultation.findMany({
+      where: {
+        organizationId,
+        deletedAt: null
+      },
+      include: {
+        customer: {
+          select: {
+            name: true,
+            phone: true
+          }
         }
-      }
-    },
-    orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-    take: 6
-  });
+      },
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+      take: 5
+    }),
+    prisma.notification.findMany({
+      where: {
+        organizationId,
+        readAt: null
+      },
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+      take: 5
+    }),
+    prisma.activityLog.findMany({
+      where: {
+        organizationId
+      },
+      include: {
+        user: {
+          select: {
+            name: true
+          }
+        }
+      },
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+      take: 6
+    })
+  ]);
 
   return {
     metrics: {
@@ -223,6 +306,12 @@ export async function getDashboardOverview({
     ),
     pendingFollowUps: followUpQueue.map((followUp) =>
       serializeFollowUp(followUp as PendingFollowUp)
+    ),
+    recentConsultations: consultationQueue.map((consultation) =>
+      serializeConsultation(consultation as RecentConsultation)
+    ),
+    unreadNotifications: notificationQueue.map((notification) =>
+      serializeNotification(notification as UnreadNotification)
     ),
     recentActivities: recentActivities.map((activity) =>
       serializeActivity(activity as RecentActivity)
