@@ -346,6 +346,18 @@ describe("reservation service", () => {
         }
       })
     );
+    expect(reservationUpdate).not.toHaveBeenCalledWith(
+      expect.objectContaining({
+        include: expect.anything()
+      })
+    );
+    expect(prisma.reservation.findUnique).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          id: 81n
+        }
+      })
+    );
     expect(customerUpdate).toHaveBeenCalledWith({
       where: {
         id: 21n
@@ -476,6 +488,29 @@ describe("reservation service", () => {
     vi.mocked(prisma.reservation.findFirst).mockResolvedValueOnce({
       id: 81n,
       customerId: 21n
+    } as never);
+    vi.mocked(prisma.reservation.findUnique).mockResolvedValueOnce({
+      id: 81n,
+      organizationId: 7n,
+      customerId: 21n,
+      userId: 3n,
+      title: "방문 설치 예약 변경",
+      startAt: new Date("2026-08-14T02:00:00.000Z"),
+      endAt: new Date("2026-08-14T03:00:00.000Z"),
+      location: "서울 서초구",
+      memo: null,
+      status: "in_progress",
+      createdAt: new Date("2026-08-13T00:00:00.000Z"),
+      updatedAt: new Date("2026-08-13T01:00:00.000Z"),
+      customer: {
+        id: 21n,
+        name: "김철수",
+        phone: "010-1111-1111"
+      },
+      user: {
+        id: 3n,
+        name: "홍길동"
+      }
     } as never);
     vi.mocked(prisma.$transaction).mockImplementationOnce(async (callback) =>
       callback({

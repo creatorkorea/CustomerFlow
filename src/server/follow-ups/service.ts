@@ -466,7 +466,7 @@ export async function updateFollowUp({
 
   const completedAt = input.status === "completed" ? new Date() : null;
 
-  const followUp = await prisma.$transaction(async (tx) => {
+  const followUpIdFromUpdate = await prisma.$transaction(async (tx) => {
     const updated = await tx.followUp.update({
       where: {
         id: followUpId
@@ -478,8 +478,7 @@ export async function updateFollowUp({
         status: input.status,
         completedAt,
         userId
-      },
-      include: followUpInclude()
+      }
     });
 
     await tx.activityLog.create({
@@ -497,8 +496,19 @@ export async function updateFollowUp({
       }
     });
 
-    return updated;
+    return updated.id;
   });
 
-  return serializeFollowUp(followUp as FollowUpWithRelations);
+  const followUpWithRelations = await prisma.followUp.findUnique({
+    where: {
+      id: followUpIdFromUpdate
+    },
+    include: followUpInclude()
+  });
+
+  if (!followUpWithRelations) {
+    throw new AppError("NOT_FOUND", "후속관리를 찾을 수 없습니다.", 404);
+  }
+
+  return serializeFollowUp(followUpWithRelations as FollowUpWithRelations);
 }

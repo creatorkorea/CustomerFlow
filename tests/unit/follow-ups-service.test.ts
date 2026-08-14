@@ -463,6 +463,30 @@ describe("follow-up service", () => {
       id: 101n,
       customerId: 21n
     } as never);
+    vi.mocked(prisma.followUp.findUnique).mockResolvedValueOnce({
+      id: 101n,
+      organizationId: 7n,
+      customerId: 21n,
+      consultationId: null,
+      userId: 3n,
+      title: "방문 후 만족도 확인",
+      memo: null,
+      dueAt: new Date("2026-08-16T01:00:00.000Z"),
+      status: "completed",
+      completedAt: new Date("2026-08-13T01:00:00.000Z"),
+      createdAt: new Date("2026-08-13T00:00:00.000Z"),
+      updatedAt: new Date("2026-08-13T01:00:00.000Z"),
+      customer: {
+        id: 21n,
+        name: "김철수",
+        phone: "010-1111-1111"
+      },
+      consultation: null,
+      user: {
+        id: 3n,
+        name: "홍길동"
+      }
+    } as never);
     vi.mocked(prisma.$transaction).mockImplementationOnce(async (callback) =>
       callback({
         followUp: {
@@ -509,6 +533,18 @@ describe("follow-up service", () => {
           status: "completed",
           completedAt: expect.any(Date),
           userId: 3n
+        }
+      })
+    );
+    expect(followUpUpdate).not.toHaveBeenCalledWith(
+      expect.objectContaining({
+        include: expect.anything()
+      })
+    );
+    expect(prisma.followUp.findUnique).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          id: 101n
         }
       })
     );

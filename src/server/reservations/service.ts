@@ -438,7 +438,7 @@ export async function updateReservation({
 
   const customerStatus = customerStatusForReservationStatus(input.status);
 
-  const reservation = await prisma.$transaction(async (tx) => {
+  const reservationIdFromUpdate = await prisma.$transaction(async (tx) => {
     const updated = await tx.reservation.update({
       where: {
         id: reservationId
@@ -451,8 +451,7 @@ export async function updateReservation({
         memo: input.memo ?? null,
         status: input.status,
         userId
-      },
-      include: reservationInclude()
+      }
     });
 
     if (customerStatus) {
@@ -481,8 +480,21 @@ export async function updateReservation({
       }
     });
 
-    return updated;
+    return updated.id;
   });
 
-  return serializeReservation(reservation as ReservationWithRelations);
+  const reservationWithRelations = await prisma.reservation.findUnique({
+    where: {
+      id: reservationIdFromUpdate
+    },
+    include: reservationInclude()
+  });
+
+  if (!reservationWithRelations) {
+    throw new AppError("NOT_FOUND", "예약을 찾을 수 없습니다.", 404);
+  }
+
+  return serializeReservation(
+    reservationWithRelations as ReservationWithRelations
+  );
 }
