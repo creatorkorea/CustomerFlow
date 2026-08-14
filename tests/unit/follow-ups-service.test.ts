@@ -31,6 +31,7 @@ import {
   listFollowUps,
   updateFollowUpStatus
 } from "@/server/follow-ups/service";
+import { AppError } from "@/server/shared/http-errors";
 
 describe("follow-up service", () => {
   beforeEach(() => {
@@ -38,6 +39,9 @@ describe("follow-up service", () => {
   });
 
   it("lists only non-deleted follow-ups for the current organization", async () => {
+    vi.mocked(prisma.customer.findFirst).mockResolvedValueOnce({
+      id: 21n
+    } as never);
     vi.mocked(prisma.followUp.count).mockResolvedValueOnce(1);
     vi.mocked(prisma.followUp.findMany).mockResolvedValueOnce([
       {
@@ -94,6 +98,19 @@ describe("follow-up service", () => {
         }
       ]
     });
+  });
+
+  it("returns not found when listing follow-ups for a customer outside the current organization", async () => {
+    vi.mocked(prisma.customer.findFirst).mockResolvedValueOnce(null);
+
+    await expect(
+      listFollowUps({
+        organizationId: 7n,
+        customerId: "999"
+      })
+    ).rejects.toMatchObject(new AppError("NOT_FOUND", "고객을 찾을 수 없습니다.", 404));
+
+    expect(prisma.followUp.findMany).not.toHaveBeenCalled();
   });
 
   it("creates a follow-up for a customer in the current organization and logs the activity", async () => {

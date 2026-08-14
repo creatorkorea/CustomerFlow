@@ -119,6 +119,13 @@ export async function listFollowUps({
   page = 1,
   pageSize = 20
 }: ListFollowUpsParams) {
+  if (customerId) {
+    await ensureCustomerInOrganization({
+      customerId: BigInt(customerId),
+      organizationId
+    });
+  }
+
   const where: Prisma.FollowUpWhereInput = {
     organizationId,
     deletedAt: null,

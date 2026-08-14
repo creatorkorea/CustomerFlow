@@ -88,6 +88,13 @@ export async function listReservations({
   page = 1,
   pageSize = 20
 }: ListReservationsParams) {
+  if (customerId) {
+    await ensureCustomerInOrganization({
+      customerId: BigInt(customerId),
+      organizationId
+    });
+  }
+
   const where: Prisma.ReservationWhereInput = {
     organizationId,
     deletedAt: null,

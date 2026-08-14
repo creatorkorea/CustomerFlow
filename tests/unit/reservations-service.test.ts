@@ -30,6 +30,7 @@ import {
   listReservations,
   updateReservationStatus
 } from "@/server/reservations/service";
+import { AppError } from "@/server/shared/http-errors";
 
 describe("reservation service", () => {
   beforeEach(() => {
@@ -37,6 +38,9 @@ describe("reservation service", () => {
   });
 
   it("lists only non-deleted reservations for the current organization", async () => {
+    vi.mocked(prisma.customer.findFirst).mockResolvedValueOnce({
+      id: 21n
+    } as never);
     vi.mocked(prisma.reservation.count).mockResolvedValueOnce(1);
     vi.mocked(prisma.reservation.findMany).mockResolvedValueOnce([
       {
@@ -92,6 +96,19 @@ describe("reservation service", () => {
         }
       ]
     });
+  });
+
+  it("returns not found when listing reservations for a customer outside the current organization", async () => {
+    vi.mocked(prisma.customer.findFirst).mockResolvedValueOnce(null);
+
+    await expect(
+      listReservations({
+        organizationId: 7n,
+        customerId: "999"
+      })
+    ).rejects.toMatchObject(new AppError("NOT_FOUND", "고객을 찾을 수 없습니다.", 404));
+
+    expect(prisma.reservation.findMany).not.toHaveBeenCalled();
   });
 
   it("creates a reservation for a customer in the current organization and marks the customer reserved", async () => {

@@ -24,6 +24,7 @@ import {
   createConsultation,
   listConsultations
 } from "@/server/consultations/service";
+import { AppError } from "@/server/shared/http-errors";
 
 describe("consultation service", () => {
   beforeEach(() => {
@@ -31,6 +32,9 @@ describe("consultation service", () => {
   });
 
   it("lists only non-deleted consultations for the current organization", async () => {
+    vi.mocked(prisma.customer.findFirst).mockResolvedValueOnce({
+      id: 21n
+    } as never);
     vi.mocked(prisma.consultation.count).mockResolvedValueOnce(1);
     vi.mocked(prisma.consultation.findMany).mockResolvedValueOnce([
       {
@@ -86,6 +90,19 @@ describe("consultation service", () => {
         }
       ]
     });
+  });
+
+  it("returns not found when listing consultations for a customer outside the current organization", async () => {
+    vi.mocked(prisma.customer.findFirst).mockResolvedValueOnce(null);
+
+    await expect(
+      listConsultations({
+        organizationId: 7n,
+        customerId: "999"
+      })
+    ).rejects.toMatchObject(new AppError("NOT_FOUND", "고객을 찾을 수 없습니다.", 404));
+
+    expect(prisma.consultation.findMany).not.toHaveBeenCalled();
   });
 
   it("creates a consultation for a customer in the current organization and marks the customer consulting", async () => {

@@ -88,6 +88,13 @@ export async function listConsultations({
   page = 1,
   pageSize = 20
 }: ListConsultationsParams) {
+  if (customerId) {
+    await ensureCustomerInOrganization({
+      customerId: BigInt(customerId),
+      organizationId
+    });
+  }
+
   const where: Prisma.ConsultationWhereInput = {
     organizationId,
     deletedAt: null,
