@@ -20,7 +20,9 @@ export function AppShell({
           unreadNotificationCount={unreadNotificationCount}
           userName={userName}
         />
-        <main className="flex-1 px-4 py-5 md:px-6 lg:px-7">{children}</main>
+        <main className="flex-1 px-4 py-5 md:px-6 lg:px-8">
+          <div className="mx-auto w-full max-w-[1440px]">{children}</div>
+        </main>
       </div>
     </div>
   );

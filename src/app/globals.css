@@ -1,19 +1,23 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f6f8fb;
+  --background: #f6f8f7;
+  --background-soft: #eef6f4;
   --foreground: #0f172a;
   --card: #ffffff;
   --card-foreground: #0f172a;
-  --muted: #f1f5f9;
+  --muted: #eef4f2;
   --muted-foreground: #64748b;
-  --border: #d9e2ec;
-  --primary: #008b8b;
+  --border: #d8e3df;
+  --border-strong: #bed2cc;
+  --primary: #006f6a;
+  --primary-hover: #005f5b;
   --primary-foreground: #ffffff;
+  --primary-soft: #e4f5f2;
   --destructive: #b91c1c;
   --ring: #0d9488;
-  --surface-raised: #ffffff;
-  --surface-subtle: #fbfdff;
+  --surface-raised: #fbfefd;
+  --surface-subtle: #f8fbfa;
   --success: #16a34a;
   --info: #2563eb;
   --warning: #d97706;
@@ -27,7 +31,9 @@
 body {
   min-height: 100vh;
   margin: 0;
-  background: var(--background);
+  background:
+    linear-gradient(180deg, #fbfdfc 0%, var(--background) 18rem),
+    var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
@@ -49,7 +55,7 @@ select {
   display: block;
   border-radius: 0.5rem;
   border: 1px solid var(--border);
-  background: #ffffff;
+  background: var(--surface-raised);
   color: #0f172a;
   font-size: 0.875rem;
   outline: none;
@@ -72,4 +78,11 @@ select {
 .form-textarea:focus-visible {
   border-color: var(--ring);
   box-shadow: 0 0 0 3px rgb(13 148 136 / 0.14);
+}
+
+.form-select:disabled,
+.form-textarea:disabled {
+  cursor: not-allowed;
+  background: #f1f5f9;
+  color: #94a3b8;
 }

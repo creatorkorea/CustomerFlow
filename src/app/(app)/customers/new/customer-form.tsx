@@ -88,7 +88,7 @@ export function CustomerForm({ tags }: CustomerFormProps) {
                 key={tag.id}
               >
                 <input
-                  className="h-4 w-4 rounded border-[var(--border)] accent-teal-700"
+                  className="h-4 w-4 rounded border-[var(--border)] accent-[var(--primary)]"
                   name="tagIds"
                   type="checkbox"
                   value={tag.id}
@@ -104,10 +104,15 @@ export function CustomerForm({ tags }: CustomerFormProps) {
           </div>
         </fieldset>
       ) : null}
-      <Button disabled={isPending} type="submit">
-        <Save aria-hidden="true" className="h-4 w-4" />
-        {isPending ? "저장 중" : "저장"}
-      </Button>
+      <div className="flex flex-col gap-2 border-t border-[var(--border)] pt-5 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-sm text-slate-500">
+          저장 후 고객 상세에서 상담, 예약, 후속관리를 바로 등록할 수 있습니다.
+        </p>
+        <Button className="sm:min-w-28" disabled={isPending} type="submit">
+          <Save aria-hidden="true" className="h-4 w-4" />
+          {isPending ? "저장 중" : "저장"}
+        </Button>
+      </div>
     </form>
   );
 }

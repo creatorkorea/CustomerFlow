@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Plus, Search } from "lucide-react";
+import { Mail, Phone, Plus, Search, SlidersHorizontal } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -59,26 +59,28 @@ export default async function CustomersPage({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <div className="rounded-lg border border-[var(--border)] bg-white px-5 py-5 shadow-[0_1px_2px_rgb(15_23_42/0.035)]">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <Badge>Customers</Badge>
-          <h1 className="mt-3 text-2xl font-semibold tracking-tight text-slate-950">
-            고객
+          <Badge>고객 운영</Badge>
+          <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950">
+            고객 목록
           </h1>
           <p className="mt-2 text-sm text-slate-600">
-            신규 문의부터 예약, 후속관리까지 이어질 고객 기반 데이터입니다.
+            신규 문의부터 상담, 예약, 후속 연락까지 이어지는 고객 기반 데이터입니다.
           </p>
         </div>
         <Link
-          className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md bg-[var(--primary)] px-4 text-sm font-semibold text-[var(--primary-foreground)] shadow-sm transition-colors hover:bg-teal-700 sm:w-auto"
+          className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md bg-[var(--primary)] px-4 text-sm font-semibold text-[var(--primary-foreground)] shadow-[0_1px_2px_rgb(15_23_42/0.08)] transition-colors hover:bg-[var(--primary-hover)] sm:w-auto"
           href="/customers/new"
         >
           <Plus aria-hidden="true" className="h-4 w-4" />
           고객 추가
         </Link>
+        </div>
       </div>
 
-      <section className="grid gap-4 md:grid-cols-3">
+      <section className="grid gap-3 md:grid-cols-3">
         <Card>
           <CardContent className="flex items-center justify-between p-5">
             <div>
@@ -114,7 +116,7 @@ export default async function CustomersPage({
         </Card>
       </section>
 
-      <form className="flex flex-col gap-3 rounded-lg border border-[var(--border)] bg-white p-4 shadow-[0_1px_2px_rgb(15_23_42/0.04)] sm:flex-row">
+      <form className="flex flex-col gap-3 rounded-lg border border-[var(--border)] bg-white p-4 shadow-[0_1px_2px_rgb(15_23_42/0.035)] lg:flex-row">
         <label className="relative flex-1">
           <span className="sr-only">이름/전화번호 검색</span>
           <Search
@@ -156,6 +158,18 @@ export default async function CustomersPage({
       </form>
 
       <Card>
+        <div className="flex flex-col gap-3 border-b border-[var(--border)] p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="text-base font-semibold text-slate-950">최근 고객</h2>
+            <p className="mt-1 text-sm text-slate-500">
+              총 {total}명 중 현재 조건에 맞는 고객입니다.
+            </p>
+          </div>
+          <div className="inline-flex items-center gap-2 text-sm font-medium text-slate-500">
+            <SlidersHorizontal aria-hidden="true" className="h-4 w-4" />
+            필터 적용
+          </div>
+        </div>
         <CardContent className="p-0">
           {customers.length === 0 ? (
             <div className="flex min-h-72 flex-col items-center justify-center px-6 text-center">
@@ -166,7 +180,7 @@ export default async function CustomersPage({
                 첫 고객을 등록하고 상담과 예약을 관리해보세요.
               </p>
               <Link
-                className="mt-5 inline-flex h-10 items-center justify-center gap-2 rounded-md bg-[var(--primary)] px-4 text-sm font-medium text-[var(--primary-foreground)] hover:bg-teal-800"
+                className="mt-5 inline-flex h-10 items-center justify-center gap-2 rounded-md bg-[var(--primary)] px-4 text-sm font-medium text-[var(--primary-foreground)] hover:bg-[var(--primary-hover)]"
                 href="/customers/new"
               >
                 <Plus aria-hidden="true" className="h-4 w-4" />첫 고객 등록
@@ -226,29 +240,29 @@ export default async function CustomersPage({
             <div className="hidden overflow-x-auto md:block" data-desktop-table="customers">
               <table className="w-full min-w-[760px] text-sm">
                 <caption className="sr-only">고객 목록 총 {total}명</caption>
-                <thead className="border-b border-[var(--border)] bg-slate-50 text-left text-xs font-semibold uppercase text-slate-500">
+                <thead className="border-b border-[var(--border)] bg-[var(--surface-subtle)] text-left text-xs font-semibold text-slate-500">
                   <tr>
                     <th className="px-4 py-3">고객명</th>
                     <th className="px-4 py-3">전화번호</th>
-                    <th className="px-4 py-3">이메일</th>
                     <th className="px-4 py-3">상태</th>
                     <th className="px-4 py-3">최근 상담</th>
                     <th className="px-4 py-3">태그</th>
+                    <th className="px-4 py-3 text-right">작업</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[var(--border)]">
                   {customers.map((customer) => (
-                    <tr className="transition-colors hover:bg-teal-50/40" key={customer.id}>
+                    <tr className="transition-colors hover:bg-[var(--primary-soft)]/45" key={customer.id}>
                       <td className="px-4 py-3 font-medium text-slate-950">
                         <Link className="hover:text-teal-700" href={`/customers/${customer.id}`}>
                           {customer.name}
                         </Link>
+                        <div className="mt-0.5 text-xs font-normal text-slate-500">
+                          {customer.email ?? "이메일 없음"}
+                        </div>
                       </td>
                       <td className="px-4 py-3 text-slate-600">
                         {customer.phone ?? "-"}
-                      </td>
-                      <td className="px-4 py-3 text-slate-600">
-                        {customer.email ?? "-"}
                       </td>
                       <td className="px-4 py-3">
                         <Badge variant={statusVariants[customer.status]}>
@@ -265,6 +279,30 @@ export default async function CustomersPage({
                       </td>
                       <td className="px-4 py-3 text-slate-600">
                         {customer.tags.map((tag) => tag.name).join(", ") || "-"}
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex justify-end gap-2">
+                          {customer.phone ? (
+                            <a
+                              aria-label={`${customer.name} 전화하기`}
+                              className="inline-flex h-8 items-center justify-center gap-1.5 rounded-md border border-[var(--border)] bg-white px-2.5 text-xs font-semibold text-slate-700 hover:border-[var(--primary)] hover:text-[var(--primary)]"
+                              href={`tel:${customer.phone}`}
+                            >
+                              <Phone aria-hidden="true" className="h-3.5 w-3.5" />
+                              전화
+                            </a>
+                          ) : null}
+                          {customer.email ? (
+                            <a
+                              aria-label={`${customer.name} 이메일 보내기`}
+                              className="inline-flex h-8 items-center justify-center gap-1.5 rounded-md border border-[var(--border)] bg-white px-2.5 text-xs font-semibold text-slate-700 hover:border-[var(--primary)] hover:text-[var(--primary)]"
+                              href={`mailto:${customer.email}`}
+                            >
+                              <Mail aria-hidden="true" className="h-3.5 w-3.5" />
+                              메일
+                            </a>
+                          ) : null}
+                        </div>
                       </td>
                     </tr>
                   ))}

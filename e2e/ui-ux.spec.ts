@@ -4,7 +4,7 @@ import { expect, test, type Page } from "@playwright/test";
 
 const protectedViews = [
   { path: "/dashboard", heading: "오늘 해야 할 일", name: "dashboard" },
-  { path: "/customers", heading: "고객", name: "customers" },
+  { path: "/customers", heading: "고객 목록", name: "customers" },
   { path: "/consultations", heading: "상담", name: "consultations" },
   { path: "/consultations/new", heading: "상담 등록", name: "consultations-new" },
   { path: "/reservations", heading: "예약", name: "reservations" },

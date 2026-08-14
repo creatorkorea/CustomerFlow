@@ -4,20 +4,20 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex h-10 items-center justify-center gap-2 rounded-md px-4 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+  "inline-flex h-10 items-center justify-center gap-2 rounded-md px-4 text-sm font-semibold leading-none transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
       variant: {
         default:
-          "bg-[var(--primary)] text-[var(--primary-foreground)] shadow-sm hover:bg-teal-700",
+          "bg-[var(--primary)] text-[var(--primary-foreground)] shadow-[0_1px_2px_rgb(15_23_42/0.08)] hover:bg-[var(--primary-hover)]",
         outline:
-          "border border-[var(--border)] bg-white text-slate-800 shadow-sm hover:bg-slate-50",
-        ghost: "text-slate-700 hover:bg-slate-100",
+          "border border-[var(--border-strong)] bg-white text-slate-800 shadow-[0_1px_2px_rgb(15_23_42/0.04)] hover:border-[var(--primary)] hover:bg-[var(--primary-soft)] hover:text-[var(--primary)]",
+        ghost: "text-slate-600 hover:bg-[var(--muted)] hover:text-slate-950",
         destructive: "bg-red-600 text-white shadow-sm hover:bg-red-700"
       },
       size: {
         default: "h-10 px-4",
-        sm: "h-9 px-3",
+        sm: "h-9 px-3 text-xs",
         icon: "h-10 w-10 px-0"
       }
     },

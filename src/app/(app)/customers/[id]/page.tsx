@@ -84,7 +84,7 @@ export default async function CustomerDetailPage({
 
   return (
     <div className="space-y-6">
-      <div>
+      <div className="rounded-lg border border-[var(--border)] bg-white px-5 py-5 shadow-[0_1px_2px_rgb(15_23_42/0.035)]">
         <Link
           className="inline-flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-slate-950"
           href="/customers"
@@ -94,35 +94,42 @@ export default async function CustomerDetailPage({
         </Link>
         <div className="mt-5 flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight text-slate-950">
+            <Badge variant={statusVariants[customer.status]}>
+              {statusLabels[customer.status]}
+            </Badge>
+            <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950">
               {customer.name}
             </h1>
             <p className="mt-2 text-sm text-slate-600">
               {customer.phone ?? "전화번호 없음"}
             </p>
-            <div className="mt-3">
-              <Badge variant={statusVariants[customer.status]}>
-                {statusLabels[customer.status]}
-              </Badge>
-            </div>
+            {customer.tags.length > 0 ? (
+              <div className="mt-3 flex flex-wrap gap-2">
+                {customer.tags.map((tag) => (
+                  <Badge key={tag.id} variant="neutral">
+                    {tag.name}
+                  </Badge>
+                ))}
+              </div>
+            ) : null}
           </div>
           <div className="grid gap-2 sm:grid-cols-3 xl:w-auto">
             <Link
-              className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[var(--border)] bg-white px-4 text-sm font-semibold text-slate-800 shadow-sm transition-colors hover:bg-slate-50"
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[var(--border-strong)] bg-white px-4 text-sm font-semibold text-slate-800 shadow-[0_1px_2px_rgb(15_23_42/0.04)] transition-colors hover:border-[var(--primary)] hover:bg-[var(--primary-soft)] hover:text-[var(--primary)]"
               href={`/consultations/new?customerId=${customerId}`}
             >
               <MessageSquarePlus aria-hidden="true" className="h-4 w-4" />
               상담 등록
             </Link>
             <Link
-              className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[var(--border)] bg-white px-4 text-sm font-semibold text-slate-800 shadow-sm transition-colors hover:bg-slate-50"
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[var(--border-strong)] bg-white px-4 text-sm font-semibold text-slate-800 shadow-[0_1px_2px_rgb(15_23_42/0.04)] transition-colors hover:border-[var(--primary)] hover:bg-[var(--primary-soft)] hover:text-[var(--primary)]"
               href={`/reservations/new?customerId=${customerId}`}
             >
               <CalendarPlus aria-hidden="true" className="h-4 w-4" />
               예약 등록
             </Link>
             <Link
-              className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-[var(--primary)] px-4 text-sm font-semibold text-[var(--primary-foreground)] shadow-sm transition-colors hover:bg-teal-700"
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-[var(--primary)] px-4 text-sm font-semibold text-[var(--primary-foreground)] shadow-[0_1px_2px_rgb(15_23_42/0.08)] transition-colors hover:bg-[var(--primary-hover)]"
               href={`/follow-ups/new?customerId=${customerId}`}
             >
               <ClipboardPlus aria-hidden="true" className="h-4 w-4" />
@@ -132,8 +139,8 @@ export default async function CustomerDetailPage({
         </div>
       </div>
       <section className="grid gap-4 lg:grid-cols-[320px_1fr]">
-        <Card>
-          <CardHeader>
+        <Card className="overflow-hidden">
+          <CardHeader className="border-b border-[var(--border)]">
             <CardTitle>고객 정보</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
@@ -146,8 +153,8 @@ export default async function CustomerDetailPage({
             <Info label="메모" value={customer.memo} />
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader>
+        <Card className="overflow-hidden">
+          <CardHeader className="border-b border-[var(--border)]">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <CardTitle>활동 타임라인</CardTitle>
               <div className="flex flex-wrap gap-2">
@@ -158,8 +165,8 @@ export default async function CustomerDetailPage({
                     <Link
                       className={`inline-flex h-8 items-center justify-center rounded-md border px-3 text-xs font-semibold transition-colors ${
                         isActive
-                          ? "border-teal-600 bg-teal-50 text-teal-800"
-                          : "border-[var(--border)] bg-white text-slate-700 hover:bg-slate-50"
+                          ? "border-[var(--primary)] bg-[var(--primary-soft)] text-[var(--primary)]"
+                          : "border-[var(--border)] bg-white text-slate-700 hover:bg-[var(--surface-subtle)]"
                       }`}
                       href={filter.href(customerId)}
                       key={filter.label}
@@ -212,8 +219,8 @@ export default async function CustomerDetailPage({
           </CardContent>
         </Card>
       </section>
-      <Card>
-        <CardHeader>
+      <Card className="overflow-hidden">
+        <CardHeader className="border-b border-[var(--border)]">
           <CardTitle>고객 수정</CardTitle>
           <p className="mt-2 text-sm text-slate-600">
             고객 기본정보와 상태를 최신으로 유지하세요.

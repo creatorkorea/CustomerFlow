@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Bell, Search } from "lucide-react";
+import { Bell, LogOut, Search } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,10 +17,10 @@ export function AppHeader({
   const initials = (userName?.slice(0, 1) || "U").toUpperCase();
 
   return (
-    <header className="flex h-16 items-center gap-3 border-b border-[var(--border)] bg-white px-4 md:px-6">
+    <header className="flex h-16 items-center gap-3 border-b border-[var(--border)] bg-white/95 px-4 backdrop-blur md:px-6">
       <form
         action="/customers"
-        className="relative max-w-2xl flex-1"
+        className="relative max-w-3xl flex-1"
         method="get"
         role="search"
       >
@@ -30,15 +30,15 @@ export function AppHeader({
         />
         <Input
           aria-label="고객 또는 전화번호 검색"
-          className="pl-9"
+          className="border-[var(--border-strong)] bg-white pl-9 shadow-[0_1px_2px_rgb(15_23_42/0.035)]"
           name="search"
-          placeholder="고객명, 전화번호, 이메일 검색"
+          placeholder="고객명, 전화번호, 이메일 검색..."
           type="search"
         />
       </form>
       <Link
         aria-label="알림"
-        className="relative inline-flex h-10 w-10 items-center justify-center rounded-md border border-[var(--border)] bg-white text-sm font-semibold text-slate-800 shadow-sm transition-colors hover:bg-slate-50"
+        className="relative inline-flex h-10 w-10 items-center justify-center rounded-md border border-[var(--border)] bg-white text-sm font-semibold text-slate-700 shadow-[0_1px_2px_rgb(15_23_42/0.04)] transition-colors hover:border-[var(--border-strong)] hover:bg-[var(--surface-subtle)]"
         href="/notifications"
       >
         <Bell aria-hidden="true" className="h-4 w-4" />
@@ -48,18 +48,18 @@ export function AppHeader({
           </span>
         ) : null}
       </Link>
-      <div className="hidden items-center gap-3 rounded-md border border-[var(--border)] bg-white px-2 py-1 sm:flex">
-        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-800 text-xs font-bold text-white">
+      <div className="hidden items-center gap-3 border-l border-[var(--border)] pl-3 sm:flex">
+        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-900 text-xs font-bold text-white">
           {initials}
         </div>
-        <div className="min-w-20 text-sm">
+        <div className="min-w-20 text-sm leading-tight">
           <div className="font-semibold text-slate-900">{userName ?? "사용자"}</div>
           <div className="text-xs text-slate-500">관리자</div>
         </div>
       </div>
       <form action={logoutAction}>
-        <Button size="sm" type="submit" variant="ghost">
-          로그아웃
+        <Button aria-label="로그아웃" size="icon" type="submit" variant="ghost">
+          <LogOut aria-hidden="true" className="h-4 w-4" />
         </Button>
       </form>
     </header>

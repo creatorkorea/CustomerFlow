@@ -4,10 +4,10 @@ import { LoginForm } from "@/app/(auth)/login/login-form";
 export default function LoginPage() {
   return (
     <main className="flex min-h-screen items-center justify-center bg-[var(--background)] p-4">
-      <Card className="w-full max-w-md">
+      <Card className="w-full max-w-md overflow-hidden">
         <CardHeader className="border-b border-[var(--border)]">
           <div className="mb-4 flex items-center gap-2">
-            <span className="flex h-8 w-8 items-center justify-center rounded-md bg-[var(--primary)] text-sm font-black text-white">
+            <span className="flex h-8 w-8 items-center justify-center rounded-md bg-slate-950 text-sm font-black text-white shadow-[inset_0_-8px_18px_rgb(0_111_106/0.45)]">
               C
             </span>
             <span className="text-lg font-bold text-slate-950">
@@ -16,7 +16,7 @@ export default function LoginPage() {
           </div>
           <CardTitle className="text-xl">CustomerFlow 로그인</CardTitle>
           <p className="mt-2 text-sm text-slate-600">
-            고객, 상담, 예약, 후속관리를 한곳에서 관리하세요.
+            오늘의 고객 운영 흐름으로 바로 들어갑니다.
           </p>
         </CardHeader>
         <CardContent>
