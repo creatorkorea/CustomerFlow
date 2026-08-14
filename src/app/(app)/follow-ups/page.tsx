@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Pagination } from "@/components/ui/pagination";
 import { requireOrganizationId } from "@/server/auth/session";
 import { updateFollowUpStatusAction } from "@/server/follow-ups/actions";
 import { listFollowUps } from "@/server/follow-ups/service";
@@ -43,7 +44,8 @@ export default async function FollowUpsPage({ searchParams }: FollowUpsPageProps
   const params = await searchParams;
   const parsed = listFollowUpsSchema.parse({
     customerId: firstParam(params.customerId),
-    status: firstParam(params.status)
+    status: firstParam(params.status),
+    page: firstParam(params.page)
   });
   const { followUps, total } = await listFollowUps({
     organizationId,
@@ -242,6 +244,16 @@ export default async function FollowUpsPage({ searchParams }: FollowUpsPageProps
             </div>
           )}
         </CardContent>
+        <Pagination
+          currentPage={parsed.page}
+          pageSize={parsed.pageSize}
+          params={{
+            customerId: parsed.customerId,
+            status: parsed.status
+          }}
+          pathname="/follow-ups"
+          total={total}
+        />
       </Card>
     </div>
   );

@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Pagination } from "@/components/ui/pagination";
 import { requireOrganizationId } from "@/server/auth/session";
 import { listConsultations } from "@/server/consultations/service";
 import { listConsultationsSchema } from "@/server/consultations/validation";
@@ -54,7 +55,8 @@ export default async function ConsultationsPage({
   const parsed = listConsultationsSchema.parse({
     customerId: firstParam(params.customerId),
     status: firstParam(params.status),
-    channel: firstParam(params.channel)
+    channel: firstParam(params.channel),
+    page: firstParam(params.page)
   });
   const { consultations, total } = await listConsultations({
     organizationId,
@@ -240,6 +242,17 @@ export default async function ConsultationsPage({
             </div>
           )}
         </CardContent>
+        <Pagination
+          currentPage={parsed.page}
+          pageSize={parsed.pageSize}
+          params={{
+            customerId: parsed.customerId,
+            status: parsed.status,
+            channel: parsed.channel
+          }}
+          pathname="/consultations"
+          total={total}
+        />
       </Card>
     </div>
   );

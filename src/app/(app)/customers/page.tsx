@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Pagination } from "@/components/ui/pagination";
 import { requireOrganizationId } from "@/server/auth/session";
 import { listCustomers } from "@/server/customers/service";
 import { listCustomersSchema } from "@/server/customers/validation";
@@ -44,7 +45,8 @@ export default async function CustomersPage({
   const parsed = listCustomersSchema.parse({
     search: firstParam(params.search),
     status: firstParam(params.status),
-    tagId: firstParam(params.tagId)
+    tagId: firstParam(params.tagId),
+    page: firstParam(params.page)
   });
   const { customers, total } = await listCustomers({
     organizationId,
@@ -221,6 +223,17 @@ export default async function CustomersPage({
             </div>
           )}
         </CardContent>
+        <Pagination
+          currentPage={parsed.page}
+          pageSize={parsed.pageSize}
+          params={{
+            search: parsed.search,
+            status: parsed.status,
+            tagId: parsed.tagId
+          }}
+          pathname="/customers"
+          total={total}
+        />
       </Card>
     </div>
   );

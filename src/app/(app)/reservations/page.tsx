@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Pagination } from "@/components/ui/pagination";
 import { requireOrganizationId } from "@/server/auth/session";
 import { updateReservationStatusAction } from "@/server/reservations/actions";
 import { listReservations } from "@/server/reservations/service";
@@ -49,7 +50,8 @@ export default async function ReservationsPage({
   const params = await searchParams;
   const parsed = listReservationsSchema.parse({
     customerId: firstParam(params.customerId),
-    status: firstParam(params.status)
+    status: firstParam(params.status),
+    page: firstParam(params.page)
   });
   const { reservations, total } = await listReservations({
     organizationId,
@@ -270,6 +272,16 @@ export default async function ReservationsPage({
             </div>
           )}
         </CardContent>
+        <Pagination
+          currentPage={parsed.page}
+          pageSize={parsed.pageSize}
+          params={{
+            customerId: parsed.customerId,
+            status: parsed.status
+          }}
+          pathname="/reservations"
+          total={total}
+        />
       </Card>
     </div>
   );
