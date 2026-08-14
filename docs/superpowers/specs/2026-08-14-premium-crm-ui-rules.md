@@ -135,6 +135,25 @@ Avoid:
 - Mobile list uses repeated cards, one card per customer, with no nested inner cards.
 - Empty state should be calm and action-oriented.
 
+### Workflow Lists
+
+- Consultation, reservation, and follow-up lists should follow the same structure as the customer list:
+  - premium white page header surface
+  - Korean operational badge
+  - `text-3xl` page heading
+  - compact KPI strip
+  - bordered filter bar
+  - table card with a list title, total count, and active status badge
+- Keep the existing route headings `상담`, `예약`, and `후속관리` for E2E and user recognition.
+- Use list subtitles such as `상담 목록`, `예약 목록`, and `후속관리 목록` inside the table card.
+- Desktop table headers should use the shared pale surface background and no uppercase styling.
+- Hover states should use `--primary-soft` or primary text, not hardcoded teal utility colors.
+- Mobile workflow cards should use the same border-first, light-shadow treatment as customer cards.
+- Preserve existing workflow actions:
+  - consultation detail, reservation creation, follow-up creation
+  - reservation progress/completion/cancellation
+  - follow-up completion/cancellation
+
 ### Customer Detail
 
 - Top area is an identity summary:

@@ -65,26 +65,28 @@ export default async function FollowUpsPage({ searchParams }: FollowUpsPageProps
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <Badge>Follow-ups</Badge>
-          <h1 className="mt-3 text-2xl font-semibold tracking-tight text-slate-950">
-            후속관리
-          </h1>
-          <p className="mt-2 text-sm text-slate-600">
-            상담과 예약 이후 놓치면 안 되는 연락, 확인, 처리 일을 관리합니다.
-          </p>
+      <div className="rounded-lg border border-[var(--border)] bg-white px-5 py-5 shadow-[0_1px_2px_rgb(15_23_42/0.035)]">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <Badge>후속 연락</Badge>
+            <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950">
+              후속관리
+            </h1>
+            <p className="mt-2 text-sm text-slate-600">
+              상담과 예약 이후 놓치면 안 되는 연락, 확인, 처리 일을 관리합니다.
+            </p>
+          </div>
+          <Link
+            className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md bg-[var(--primary)] px-4 text-sm font-semibold text-white shadow-[0_1px_2px_rgb(15_23_42/0.08)] transition-colors hover:bg-[var(--primary-hover)] sm:w-auto"
+            href="/follow-ups/new"
+          >
+            <Plus aria-hidden="true" className="h-4 w-4" />
+            후속관리 등록
+          </Link>
         </div>
-        <Link
-          className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md bg-[var(--primary)] px-4 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-teal-700 sm:w-auto"
-          href="/follow-ups/new"
-        >
-          <Plus aria-hidden="true" className="h-4 w-4" />
-          후속관리 등록
-        </Link>
       </div>
 
-      <section className="grid gap-4 md:grid-cols-3">
+      <section className="grid gap-3 md:grid-cols-3">
         <Card>
           <CardContent className="flex items-center justify-between p-5">
             <div>
@@ -120,7 +122,7 @@ export default async function FollowUpsPage({ searchParams }: FollowUpsPageProps
         </Card>
       </section>
 
-      <form className="flex flex-col gap-3 rounded-lg border border-[var(--border)] bg-white p-4 shadow-[0_1px_2px_rgb(15_23_42/0.04)] lg:flex-row lg:items-start">
+      <form className="flex flex-col gap-3 rounded-lg border border-[var(--border)] bg-white p-4 shadow-[0_1px_2px_rgb(15_23_42/0.035)] lg:flex-row lg:items-start">
         <div className="min-w-0 flex-1">
           <CustomerPicker
             customers={customerOptions}
@@ -140,10 +142,23 @@ export default async function FollowUpsPage({ searchParams }: FollowUpsPageProps
       </form>
 
       <Card>
+        <div className="flex flex-col gap-3 border-b border-[var(--border)] p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="text-base font-semibold text-slate-950">
+              후속관리 목록
+            </h2>
+            <p className="mt-1 text-sm text-slate-500">
+              총 {total}건 중 현재 조건에 맞는 후속관리입니다.
+            </p>
+          </div>
+          <Badge variant={parsed.status ? statusVariants[parsed.status] : "neutral"}>
+            {parsed.status ? statusLabels[parsed.status] : "전체"}
+          </Badge>
+        </div>
         <CardContent className="p-0">
           {followUps.length === 0 ? (
             <div className="flex min-h-72 flex-col items-center justify-center px-6 text-center">
-              <ClipboardCheck aria-hidden="true" className="h-10 w-10 text-teal-700" />
+              <ClipboardCheck aria-hidden="true" className="h-10 w-10 text-[var(--primary)]" />
               <h2 className="mt-4 text-lg font-semibold text-slate-950">
                 아직 등록된 후속관리가 없습니다.
               </h2>
@@ -151,7 +166,7 @@ export default async function FollowUpsPage({ searchParams }: FollowUpsPageProps
                 고객과 다시 연락할 시점이 생기면 할 일을 남기세요.
               </p>
               <Link
-                className="mt-5 inline-flex h-10 items-center justify-center gap-2 rounded-md bg-[var(--primary)] px-4 text-sm font-semibold text-white hover:bg-teal-700"
+                className="mt-5 inline-flex h-10 items-center justify-center gap-2 rounded-md bg-[var(--primary)] px-4 text-sm font-semibold text-white hover:bg-[var(--primary-hover)]"
                 href="/follow-ups/new"
               >
                 <Plus aria-hidden="true" className="h-4 w-4" />첫 후속관리 등록
@@ -165,7 +180,7 @@ export default async function FollowUpsPage({ searchParams }: FollowUpsPageProps
             >
               {followUps.map((followUp) => (
                 <article
-                  className="rounded-md border border-[var(--border)] bg-white p-4 shadow-sm"
+                  className="rounded-md border border-[var(--border)] bg-white p-4 shadow-[0_1px_2px_rgb(15_23_42/0.04)]"
                   data-mobile-list-item
                   key={followUp.id}
                 >
@@ -173,14 +188,14 @@ export default async function FollowUpsPage({ searchParams }: FollowUpsPageProps
                     <div className="min-w-0">
                       <div className="font-semibold text-slate-950">
                         <Link
-                          className="hover:text-teal-700"
+                          className="hover:text-[var(--primary)]"
                           href={`/follow-ups/${followUp.id}`}
                         >
                           {followUp.title}
                         </Link>
                       </div>
                       <Link
-                        className="mt-1 block text-sm font-medium text-slate-600 hover:text-teal-700"
+                        className="mt-1 block text-sm font-medium text-slate-600 hover:text-[var(--primary)]"
                         href={`/customers/${followUp.customerId}`}
                       >
                         {followUp.customerName}
@@ -207,14 +222,14 @@ export default async function FollowUpsPage({ searchParams }: FollowUpsPageProps
                     </div>
                   </div>
                   {followUp.memo ? (
-                    <div className="mt-3 rounded-md bg-slate-50 p-3 text-sm text-slate-700">
+                    <div className="mt-3 rounded-md bg-[var(--surface-subtle)] p-3 text-sm text-slate-700">
                       {followUp.memo}
                     </div>
                   ) : null}
                   {followUp.status === "pending" ? (
                     <div className="mt-4 flex flex-wrap gap-2">
                       <Link
-                        className="inline-flex h-9 items-center justify-center rounded-md border border-[var(--border)] bg-white px-3 text-sm font-semibold text-slate-800 shadow-sm hover:bg-slate-50"
+                        className="inline-flex h-9 items-center justify-center rounded-md border border-[var(--border)] bg-white px-3 text-sm font-semibold text-slate-800 shadow-[0_1px_2px_rgb(15_23_42/0.04)] hover:border-[var(--primary)] hover:text-[var(--primary)]"
                         href={`/follow-ups/${followUp.id}`}
                       >
                         상세 보기
@@ -245,7 +260,7 @@ export default async function FollowUpsPage({ searchParams }: FollowUpsPageProps
                   ) : (
                     <div className="mt-4">
                       <Link
-                        className="inline-flex h-9 items-center justify-center rounded-md border border-[var(--border)] bg-white px-3 text-sm font-semibold text-slate-800 shadow-sm hover:bg-slate-50"
+                        className="inline-flex h-9 items-center justify-center rounded-md border border-[var(--border)] bg-white px-3 text-sm font-semibold text-slate-800 shadow-[0_1px_2px_rgb(15_23_42/0.04)] hover:border-[var(--primary)] hover:text-[var(--primary)]"
                         href={`/follow-ups/${followUp.id}`}
                       >
                         상세 보기
@@ -261,7 +276,7 @@ export default async function FollowUpsPage({ searchParams }: FollowUpsPageProps
             >
               <table className="w-full min-w-[860px] text-sm">
                 <caption className="sr-only">후속관리 목록 총 {total}건</caption>
-                <thead className="border-b border-[var(--border)] bg-slate-50 text-left text-xs font-semibold uppercase text-slate-500">
+                <thead className="border-b border-[var(--border)] bg-[var(--surface-subtle)] text-left text-xs font-semibold text-slate-500">
                   <tr>
                     <th className="px-4 py-3">할 일</th>
                     <th className="px-4 py-3">고객</th>
@@ -274,11 +289,11 @@ export default async function FollowUpsPage({ searchParams }: FollowUpsPageProps
                 </thead>
                 <tbody className="divide-y divide-[var(--border)]">
                   {followUps.map((followUp) => (
-                    <tr className="transition-colors hover:bg-teal-50/40" key={followUp.id}>
+                    <tr className="transition-colors hover:bg-[var(--primary-soft)]/45" key={followUp.id}>
                       <td className="px-4 py-3">
                         <div className="font-medium text-slate-950">
                           <Link
-                            className="hover:text-teal-700"
+                            className="hover:text-[var(--primary)]"
                             href={`/follow-ups/${followUp.id}`}
                           >
                             {followUp.title}
@@ -290,7 +305,7 @@ export default async function FollowUpsPage({ searchParams }: FollowUpsPageProps
                       </td>
                       <td className="px-4 py-3">
                         <Link
-                          className="font-medium text-slate-950 hover:text-teal-700"
+                          className="font-medium text-slate-950 hover:text-[var(--primary)]"
                           href={`/customers/${followUp.customerId}`}
                         >
                           {followUp.customerName}
@@ -317,7 +332,7 @@ export default async function FollowUpsPage({ searchParams }: FollowUpsPageProps
                         {followUp.status === "pending" ? (
                           <div className="flex gap-2">
                             <Link
-                              className="inline-flex h-8 items-center justify-center rounded-md border border-[var(--border)] bg-white px-3 text-xs font-semibold text-slate-800 shadow-sm hover:bg-slate-50"
+                              className="inline-flex h-8 items-center justify-center rounded-md border border-[var(--border)] bg-white px-3 text-xs font-semibold text-slate-800 shadow-[0_1px_2px_rgb(15_23_42/0.04)] hover:border-[var(--primary)] hover:text-[var(--primary)]"
                               href={`/follow-ups/${followUp.id}`}
                             >
                               상세 보기
@@ -347,7 +362,7 @@ export default async function FollowUpsPage({ searchParams }: FollowUpsPageProps
                           </div>
                         ) : (
                           <Link
-                            className="inline-flex h-8 items-center justify-center rounded-md border border-[var(--border)] bg-white px-3 text-xs font-semibold text-slate-800 shadow-sm hover:bg-slate-50"
+                            className="inline-flex h-8 items-center justify-center rounded-md border border-[var(--border)] bg-white px-3 text-xs font-semibold text-slate-800 shadow-[0_1px_2px_rgb(15_23_42/0.04)] hover:border-[var(--primary)] hover:text-[var(--primary)]"
                             href={`/follow-ups/${followUp.id}`}
                           >
                             상세 보기

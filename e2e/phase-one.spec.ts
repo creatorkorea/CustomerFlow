@@ -287,7 +287,9 @@ test("authenticated owner can create a consultation for a customer", async ({ pa
   await expect(page.getByText("완료").first()).toBeVisible();
 
   await page.goto(`/consultations?customerId=${customerId}`);
-  await expect(page.getByRole("heading", { name: "상담" })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "상담", exact: true })
+  ).toBeVisible();
   const refreshedConsultationsTable = page.locator(
     '[data-desktop-table="consultations"]'
   );
@@ -370,7 +372,9 @@ test("authenticated owner can create a reservation for a customer", async ({ pag
   await expect(page.getByText("진행중").first()).toBeVisible();
 
   await page.goto(`/reservations?customerId=${customerId}`);
-  await expect(page.getByRole("heading", { name: "예약" })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "예약", exact: true })
+  ).toBeVisible();
   const refreshedReservationsTable = page.locator(
     '[data-desktop-table="reservations"]'
   );
@@ -445,7 +449,9 @@ test("authenticated owner can create a follow-up for a customer", async ({ page 
   await expect(page.getByText("완료").first()).toBeVisible();
 
   await page.goto(`/follow-ups?customerId=${customerId}`);
-  await expect(page.getByRole("heading", { name: "후속관리" })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "후속관리", exact: true })
+  ).toBeVisible();
   const refreshedFollowUpsTable = page.locator('[data-desktop-table="follow-ups"]');
   await expect(
     refreshedFollowUpsTable.getByRole("link", { name: "상세 보기" }).first()

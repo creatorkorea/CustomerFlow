@@ -53,7 +53,9 @@ test("primary app views pass desktop UI smoke checks", async ({ page }) => {
 
   for (const view of protectedViews) {
     await page.goto(view.path);
-    await expect(page.getByRole("heading", { name: view.heading })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: view.heading, exact: true })
+    ).toBeVisible();
     if (view.name === "dashboard") {
       await expect(page.getByRole("heading", { name: "최근 상담" })).toBeVisible();
       await expect(
@@ -78,7 +80,9 @@ test("primary app views pass mobile UI smoke checks", async ({ page }) => {
 
   for (const view of protectedViews) {
     await page.goto(view.path);
-    await expect(page.getByRole("heading", { name: view.heading })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: view.heading, exact: true })
+    ).toBeVisible();
     if (view.name === "dashboard") {
       await expect(page.getByRole("heading", { name: "최근 상담" })).toBeVisible();
       await expect(

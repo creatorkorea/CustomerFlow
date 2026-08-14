@@ -72,26 +72,28 @@ export default async function ConsultationsPage({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <Badge>Consultations</Badge>
-          <h1 className="mt-3 text-2xl font-semibold tracking-tight text-slate-950">
-            상담
-          </h1>
-          <p className="mt-2 text-sm text-slate-600">
-            고객 문의 내용을 기록하고 예약과 후속관리로 이어갈 상담 데이터입니다.
-          </p>
+      <div className="rounded-lg border border-[var(--border)] bg-white px-5 py-5 shadow-[0_1px_2px_rgb(15_23_42/0.035)]">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <Badge>상담 운영</Badge>
+            <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950">
+              상담
+            </h1>
+            <p className="mt-2 text-sm text-slate-600">
+              고객 문의 내용을 기록하고 예약과 후속관리로 이어갈 상담 데이터입니다.
+            </p>
+          </div>
+          <Link
+            className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md bg-[var(--primary)] px-4 text-sm font-semibold text-white shadow-[0_1px_2px_rgb(15_23_42/0.08)] transition-colors hover:bg-[var(--primary-hover)] sm:w-auto"
+            href="/consultations/new"
+          >
+            <Plus aria-hidden="true" className="h-4 w-4" />
+            상담 등록
+          </Link>
         </div>
-        <Link
-          className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md bg-[var(--primary)] px-4 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-teal-700 sm:w-auto"
-          href="/consultations/new"
-        >
-          <Plus aria-hidden="true" className="h-4 w-4" />
-          상담 등록
-        </Link>
       </div>
 
-      <section className="grid gap-4 md:grid-cols-3">
+      <section className="grid gap-3 md:grid-cols-3">
         <Card>
           <CardContent className="flex items-center justify-between p-5">
             <div>
@@ -127,7 +129,7 @@ export default async function ConsultationsPage({
         </Card>
       </section>
 
-      <form className="flex flex-col gap-3 rounded-lg border border-[var(--border)] bg-white p-4 shadow-[0_1px_2px_rgb(15_23_42/0.04)] lg:flex-row lg:items-start">
+      <form className="flex flex-col gap-3 rounded-lg border border-[var(--border)] bg-white p-4 shadow-[0_1px_2px_rgb(15_23_42/0.035)] lg:flex-row lg:items-start">
         <div className="min-w-0 flex-1">
           <CustomerPicker
             customers={customerOptions}
@@ -155,6 +157,17 @@ export default async function ConsultationsPage({
       </form>
 
       <Card>
+        <div className="flex flex-col gap-3 border-b border-[var(--border)] p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="text-base font-semibold text-slate-950">상담 목록</h2>
+            <p className="mt-1 text-sm text-slate-500">
+              총 {total}건 중 현재 조건에 맞는 상담입니다.
+            </p>
+          </div>
+          <Badge variant={parsed.status ? statusVariants[parsed.status] : "neutral"}>
+            {parsed.status ? statusLabels[parsed.status] : "전체"}
+          </Badge>
+        </div>
         <CardContent className="p-0">
           {consultations.length === 0 ? (
             <div className="flex min-h-72 flex-col items-center justify-center px-6 text-center">
@@ -165,7 +178,7 @@ export default async function ConsultationsPage({
                 고객 문의를 상담으로 남기고 예약과 후속관리로 연결하세요.
               </p>
               <Link
-                className="mt-5 inline-flex h-10 items-center justify-center gap-2 rounded-md bg-[var(--primary)] px-4 text-sm font-semibold text-white hover:bg-teal-700"
+                className="mt-5 inline-flex h-10 items-center justify-center gap-2 rounded-md bg-[var(--primary)] px-4 text-sm font-semibold text-white hover:bg-[var(--primary-hover)]"
                 href="/consultations/new"
               >
                 <Plus aria-hidden="true" className="h-4 w-4" />첫 상담 등록
@@ -179,14 +192,14 @@ export default async function ConsultationsPage({
             >
               {consultations.map((consultation) => (
                 <article
-                  className="rounded-md border border-[var(--border)] bg-white p-4 shadow-sm"
+                  className="rounded-md border border-[var(--border)] bg-white p-4 shadow-[0_1px_2px_rgb(15_23_42/0.04)]"
                   data-mobile-list-item
                   key={consultation.id}
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <Link
-                        className="font-semibold text-slate-950 hover:text-teal-700"
+                        className="font-semibold text-slate-950 hover:text-[var(--primary)]"
                         href={`/consultations/${consultation.id}`}
                       >
                         {consultation.customerName}
@@ -199,7 +212,7 @@ export default async function ConsultationsPage({
                       {statusLabels[consultation.status]}
                     </Badge>
                   </div>
-                  <div className="mt-3 rounded-md bg-slate-50 p-3 text-sm text-slate-700">
+                  <div className="mt-3 rounded-md bg-[var(--surface-subtle)] p-3 text-sm text-slate-700">
                     {consultation.content}
                   </div>
                   <div className="mt-3 grid gap-2 text-sm text-slate-600">
@@ -225,19 +238,19 @@ export default async function ConsultationsPage({
                   </div>
                   <div className="mt-4 grid gap-2 sm:grid-cols-2">
                     <Link
-                      className="inline-flex h-9 items-center justify-center rounded-md border border-[var(--border)] bg-white px-3 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
+                      className="inline-flex h-9 items-center justify-center rounded-md border border-[var(--border)] bg-white px-3 text-xs font-semibold text-slate-700 shadow-[0_1px_2px_rgb(15_23_42/0.04)] hover:border-[var(--primary)] hover:text-[var(--primary)]"
                       href={`/consultations/${consultation.id}`}
                     >
                       상세 보기
                     </Link>
                     <Link
-                      className="inline-flex h-9 items-center justify-center rounded-md border border-[var(--border)] bg-white px-3 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
+                      className="inline-flex h-9 items-center justify-center rounded-md border border-[var(--border)] bg-white px-3 text-xs font-semibold text-slate-700 shadow-[0_1px_2px_rgb(15_23_42/0.04)] hover:border-[var(--primary)] hover:text-[var(--primary)]"
                       href={`/reservations/new?customerId=${consultation.customerId}`}
                     >
                       예약 생성
                     </Link>
                     <Link
-                      className="inline-flex h-9 items-center justify-center rounded-md border border-[var(--border)] bg-white px-3 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
+                      className="inline-flex h-9 items-center justify-center rounded-md border border-[var(--border)] bg-white px-3 text-xs font-semibold text-slate-700 shadow-[0_1px_2px_rgb(15_23_42/0.04)] hover:border-[var(--primary)] hover:text-[var(--primary)]"
                       href={`/follow-ups/new?customerId=${consultation.customerId}&consultationId=${consultation.id}`}
                     >
                       후속관리 생성
@@ -252,7 +265,7 @@ export default async function ConsultationsPage({
             >
               <table className="w-full min-w-[860px] text-sm">
                 <caption className="sr-only">상담 목록 총 {total}건</caption>
-                <thead className="border-b border-[var(--border)] bg-slate-50 text-left text-xs font-semibold uppercase text-slate-500">
+                <thead className="border-b border-[var(--border)] bg-[var(--surface-subtle)] text-left text-xs font-semibold text-slate-500">
                   <tr>
                     <th className="px-4 py-3">고객</th>
                     <th className="px-4 py-3">채널</th>
@@ -265,10 +278,10 @@ export default async function ConsultationsPage({
                 </thead>
                 <tbody className="divide-y divide-[var(--border)]">
                   {consultations.map((consultation) => (
-                    <tr className="transition-colors hover:bg-teal-50/40" key={consultation.id}>
+                    <tr className="transition-colors hover:bg-[var(--primary-soft)]/45" key={consultation.id}>
                       <td className="px-4 py-3">
                         <Link
-                          className="font-medium text-slate-950 hover:text-teal-700"
+                          className="font-medium text-slate-950 hover:text-[var(--primary)]"
                           href={`/consultations/${consultation.id}`}
                         >
                           {consultation.customerName}
@@ -300,19 +313,19 @@ export default async function ConsultationsPage({
                       <td className="px-4 py-3">
                         <div className="flex flex-wrap gap-2">
                           <Link
-                            className="inline-flex h-9 items-center justify-center rounded-md border border-[var(--border)] bg-white px-3 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
+                            className="inline-flex h-9 items-center justify-center rounded-md border border-[var(--border)] bg-white px-3 text-xs font-semibold text-slate-700 shadow-[0_1px_2px_rgb(15_23_42/0.04)] hover:border-[var(--primary)] hover:text-[var(--primary)]"
                             href={`/consultations/${consultation.id}`}
                           >
                             상세 보기
                           </Link>
                           <Link
-                            className="inline-flex h-9 items-center justify-center rounded-md border border-[var(--border)] bg-white px-3 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
+                            className="inline-flex h-9 items-center justify-center rounded-md border border-[var(--border)] bg-white px-3 text-xs font-semibold text-slate-700 shadow-[0_1px_2px_rgb(15_23_42/0.04)] hover:border-[var(--primary)] hover:text-[var(--primary)]"
                             href={`/reservations/new?customerId=${consultation.customerId}`}
                           >
                             예약 생성
                           </Link>
                           <Link
-                            className="inline-flex h-9 items-center justify-center rounded-md border border-[var(--border)] bg-white px-3 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
+                            className="inline-flex h-9 items-center justify-center rounded-md border border-[var(--border)] bg-white px-3 text-xs font-semibold text-slate-700 shadow-[0_1px_2px_rgb(15_23_42/0.04)] hover:border-[var(--primary)] hover:text-[var(--primary)]"
                             href={`/follow-ups/new?customerId=${consultation.customerId}&consultationId=${consultation.id}`}
                           >
                             후속관리 생성

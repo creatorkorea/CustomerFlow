@@ -117,3 +117,21 @@
 - [x] Run `npm.cmd run build`.
 - [x] Run `npm.cmd run test:e2e`.
 - [x] Inspect `git status --short --branch`.
+
+### Task 7: Workflow List Extension
+
+**Files:**
+- Modify: `src/app/(app)/consultations/page.tsx`
+- Modify: `src/app/(app)/reservations/page.tsx`
+- Modify: `src/app/(app)/follow-ups/page.tsx`
+- Modify: `docs/superpowers/specs/2026-08-14-premium-crm-ui-rules.md`
+
+**Interfaces:**
+- Consumes: existing list services, filters, pagination, and status actions.
+- Produces: same `/consultations`, `/reservations`, and `/follow-ups` routes with the premium CRM list structure extended from customers.
+
+- [x] Refresh consultation list header, filter bar, table header, mobile cards, and action links.
+- [x] Refresh reservation list header, filter bar, table header, mobile cards, and status actions.
+- [x] Refresh follow-up list header, filter bar, table header, mobile cards, and status actions.
+- [x] Document workflow list rules in the premium CRM UI rules.
+- [x] Run focused workflow tests and full UI verification.

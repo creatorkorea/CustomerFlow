@@ -71,26 +71,28 @@ export default async function ReservationsPage({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <Badge>Reservations</Badge>
-          <h1 className="mt-3 text-2xl font-semibold tracking-tight text-slate-950">
-            예약
-          </h1>
-          <p className="mt-2 text-sm text-slate-600">
-            상담에서 확정된 방문 일정과 작업 약속을 한 곳에서 관리합니다.
-          </p>
+      <div className="rounded-lg border border-[var(--border)] bg-white px-5 py-5 shadow-[0_1px_2px_rgb(15_23_42/0.035)]">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <Badge>예약 운영</Badge>
+            <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950">
+              예약
+            </h1>
+            <p className="mt-2 text-sm text-slate-600">
+              상담에서 확정된 방문 일정과 작업 약속을 한 곳에서 관리합니다.
+            </p>
+          </div>
+          <Link
+            className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md bg-[var(--primary)] px-4 text-sm font-semibold text-white shadow-[0_1px_2px_rgb(15_23_42/0.08)] transition-colors hover:bg-[var(--primary-hover)] sm:w-auto"
+            href="/reservations/new"
+          >
+            <Plus aria-hidden="true" className="h-4 w-4" />
+            예약 등록
+          </Link>
         </div>
-        <Link
-          className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md bg-[var(--primary)] px-4 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-teal-700 sm:w-auto"
-          href="/reservations/new"
-        >
-          <Plus aria-hidden="true" className="h-4 w-4" />
-          예약 등록
-        </Link>
       </div>
 
-      <section className="grid gap-4 md:grid-cols-3">
+      <section className="grid gap-3 md:grid-cols-3">
         <Card>
           <CardContent className="flex items-center justify-between p-5">
             <div>
@@ -126,7 +128,7 @@ export default async function ReservationsPage({
         </Card>
       </section>
 
-      <form className="flex flex-col gap-3 rounded-lg border border-[var(--border)] bg-white p-4 shadow-[0_1px_2px_rgb(15_23_42/0.04)] lg:flex-row lg:items-start">
+      <form className="flex flex-col gap-3 rounded-lg border border-[var(--border)] bg-white p-4 shadow-[0_1px_2px_rgb(15_23_42/0.035)] lg:flex-row lg:items-start">
         <div className="min-w-0 flex-1">
           <CustomerPicker
             customers={customerOptions}
@@ -146,10 +148,21 @@ export default async function ReservationsPage({
       </form>
 
       <Card>
+        <div className="flex flex-col gap-3 border-b border-[var(--border)] p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="text-base font-semibold text-slate-950">예약 목록</h2>
+            <p className="mt-1 text-sm text-slate-500">
+              총 {total}건 중 현재 조건에 맞는 예약입니다.
+            </p>
+          </div>
+          <Badge variant={parsed.status ? statusVariants[parsed.status] : "neutral"}>
+            {parsed.status ? statusLabels[parsed.status] : "전체"}
+          </Badge>
+        </div>
         <CardContent className="p-0">
           {reservations.length === 0 ? (
             <div className="flex min-h-72 flex-col items-center justify-center px-6 text-center">
-              <CalendarPlus aria-hidden="true" className="h-10 w-10 text-teal-700" />
+              <CalendarPlus aria-hidden="true" className="h-10 w-10 text-[var(--primary)]" />
               <h2 className="mt-4 text-lg font-semibold text-slate-950">
                 아직 등록된 예약이 없습니다.
               </h2>
@@ -157,7 +170,7 @@ export default async function ReservationsPage({
                 상담이 확정되면 방문 일정을 예약으로 남기세요.
               </p>
               <Link
-                className="mt-5 inline-flex h-10 items-center justify-center gap-2 rounded-md bg-[var(--primary)] px-4 text-sm font-semibold text-white hover:bg-teal-700"
+                className="mt-5 inline-flex h-10 items-center justify-center gap-2 rounded-md bg-[var(--primary)] px-4 text-sm font-semibold text-white hover:bg-[var(--primary-hover)]"
                 href="/reservations/new"
               >
                 <Plus aria-hidden="true" className="h-4 w-4" />첫 예약 등록
@@ -171,7 +184,7 @@ export default async function ReservationsPage({
             >
               {reservations.map((reservation) => (
                 <article
-                  className="rounded-md border border-[var(--border)] bg-white p-4 shadow-sm"
+                  className="rounded-md border border-[var(--border)] bg-white p-4 shadow-[0_1px_2px_rgb(15_23_42/0.04)]"
                   data-mobile-list-item
                   key={reservation.id}
                 >
@@ -179,14 +192,14 @@ export default async function ReservationsPage({
                     <div className="min-w-0">
                       <div className="font-semibold text-slate-950">
                         <Link
-                          className="hover:text-teal-700"
+                          className="hover:text-[var(--primary)]"
                           href={`/reservations/${reservation.id}`}
                         >
                           {reservation.title}
                         </Link>
                       </div>
                       <Link
-                        className="mt-1 block text-sm font-medium text-slate-600 hover:text-teal-700"
+                        className="mt-1 block text-sm font-medium text-slate-600 hover:text-[var(--primary)]"
                         href={`/customers/${reservation.customerId}`}
                       >
                         {reservation.customerName}
@@ -217,7 +230,7 @@ export default async function ReservationsPage({
                   {["scheduled", "in_progress"].includes(reservation.status) ? (
                     <div className="mt-4 flex flex-wrap gap-2">
                       <Link
-                        className="inline-flex h-9 items-center justify-center rounded-md border border-[var(--border)] bg-white px-3 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
+                        className="inline-flex h-9 items-center justify-center rounded-md border border-[var(--border)] bg-white px-3 text-xs font-semibold text-slate-700 shadow-[0_1px_2px_rgb(15_23_42/0.04)] hover:border-[var(--primary)] hover:text-[var(--primary)]"
                         href={`/reservations/${reservation.id}`}
                       >
                         상세 보기
@@ -266,9 +279,9 @@ export default async function ReservationsPage({
               className="hidden overflow-x-auto md:block"
               data-desktop-table="reservations"
             >
-              <table className="w-full min-w-[900px] text-sm">
+              <table className="w-full min-w-[1040px] text-sm">
                 <caption className="sr-only">예약 목록 총 {total}건</caption>
-                <thead className="border-b border-[var(--border)] bg-slate-50 text-left text-xs font-semibold uppercase text-slate-500">
+                <thead className="border-b border-[var(--border)] bg-[var(--surface-subtle)] text-left text-xs font-semibold text-slate-500">
                   <tr>
                     <th className="px-4 py-3">예약</th>
                     <th className="px-4 py-3">고객</th>
@@ -281,10 +294,10 @@ export default async function ReservationsPage({
                 </thead>
                 <tbody className="divide-y divide-[var(--border)]">
                   {reservations.map((reservation) => (
-                    <tr className="transition-colors hover:bg-teal-50/40" key={reservation.id}>
+                    <tr className="transition-colors hover:bg-[var(--primary-soft)]/45" key={reservation.id}>
                       <td className="px-4 py-3">
                         <Link
-                          className="font-medium text-slate-950 hover:text-teal-700"
+                          className="font-medium text-slate-950 hover:text-[var(--primary)]"
                           href={`/reservations/${reservation.id}`}
                         >
                           {reservation.title}
@@ -295,7 +308,7 @@ export default async function ReservationsPage({
                       </td>
                       <td className="px-4 py-3">
                         <Link
-                          className="font-medium text-slate-950 hover:text-teal-700"
+                          className="font-medium text-slate-950 hover:text-[var(--primary)]"
                           href={`/customers/${reservation.customerId}`}
                         >
                           {reservation.customerName}
@@ -318,16 +331,16 @@ export default async function ReservationsPage({
                       <td className="px-4 py-3 text-slate-600">
                         {reservation.location ?? "-"}
                       </td>
-                      <td className="px-4 py-3 text-slate-600">
+                      <td className="whitespace-nowrap px-4 py-3 text-slate-600">
                         {reservation.userName ?? "-"}
                       </td>
                       <td className="px-4 py-3">
                         {["scheduled", "in_progress"].includes(
                           reservation.status
                         ) ? (
-                          <div className="flex flex-wrap gap-2">
+                          <div className="flex min-w-64 flex-wrap gap-2">
                             <Link
-                              className="inline-flex h-9 items-center justify-center rounded-md border border-[var(--border)] bg-white px-3 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
+                              className="inline-flex h-9 items-center justify-center rounded-md border border-[var(--border)] bg-white px-3 text-xs font-semibold text-slate-700 shadow-[0_1px_2px_rgb(15_23_42/0.04)] hover:border-[var(--primary)] hover:text-[var(--primary)]"
                               href={`/reservations/${reservation.id}`}
                             >
                               상세 보기
@@ -374,7 +387,7 @@ export default async function ReservationsPage({
                           </div>
                         ) : (
                           <Link
-                            className="inline-flex h-9 items-center justify-center rounded-md border border-[var(--border)] bg-white px-3 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
+                            className="inline-flex h-9 items-center justify-center rounded-md border border-[var(--border)] bg-white px-3 text-xs font-semibold text-slate-700 shadow-[0_1px_2px_rgb(15_23_42/0.04)] hover:border-[var(--primary)] hover:text-[var(--primary)]"
                             href={`/reservations/${reservation.id}`}
                           >
                             상세 보기
