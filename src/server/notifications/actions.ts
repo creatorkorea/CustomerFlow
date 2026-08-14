@@ -31,6 +31,7 @@ export async function markNotificationReadAction(formData: FormData) {
     notificationId: parsed.notificationId
   });
   revalidatePath("/notifications");
+  revalidatePath("/dashboard");
   revalidatePath("/(app)", "layout");
 }
 
@@ -39,5 +40,6 @@ export async function markAllNotificationsReadAction() {
 
   await markAllNotificationsRead(getTenantUser(user));
   revalidatePath("/notifications");
+  revalidatePath("/dashboard");
   revalidatePath("/(app)", "layout");
 }

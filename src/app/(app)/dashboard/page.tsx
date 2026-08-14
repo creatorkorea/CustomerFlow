@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
   CalendarDays,
+  Check,
   ClipboardList,
   MessageSquareText,
   Bell,
@@ -10,9 +11,11 @@ import {
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { requirePageUser } from "@/server/auth/session";
 import { getDashboardOverview } from "@/server/dashboard/service";
+import { markNotificationReadAction } from "@/server/notifications/actions";
 
 function formatTime(value: string) {
   return new Intl.DateTimeFormat("ko-KR", {
@@ -239,9 +242,8 @@ export default async function DashboardPage() {
             ) : (
               <div className="space-y-3">
                 {overview.unreadNotifications.map((notification) => (
-                  <Link
-                    className="block rounded-md border border-[var(--border)] bg-white px-3 py-3 transition-colors hover:border-teal-300 hover:bg-teal-50/50"
-                    href={notification.linkUrl ?? "/notifications"}
+                  <div
+                    className="rounded-md border border-[var(--border)] bg-white px-3 py-3 transition-colors hover:border-teal-300 hover:bg-teal-50/50"
                     key={notification.id}
                   >
                     <div className="flex items-center justify-between gap-3">
@@ -255,10 +257,36 @@ export default async function DashboardPage() {
                       </div>
                       <Badge variant="neutral">{notification.type}</Badge>
                     </div>
-                    <div className="mt-2 text-xs text-slate-500">
-                      {formatDateTime(notification.createdAt)}
+                    <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="text-xs text-slate-500">
+                        {formatDateTime(notification.createdAt)}
+                      </div>
+                      <div className="flex flex-col gap-2 sm:flex-row">
+                        <Link
+                          className="inline-flex h-9 items-center justify-center rounded-md border border-[var(--border)] bg-white px-3 text-sm font-semibold text-slate-800 shadow-sm transition-colors hover:bg-slate-50"
+                          href={notification.linkUrl ?? "/notifications"}
+                        >
+                          관련 화면
+                        </Link>
+                        <form action={markNotificationReadAction}>
+                          <input
+                            name="notificationId"
+                            type="hidden"
+                            value={notification.id}
+                          />
+                          <Button
+                            className="w-full sm:w-auto"
+                            size="sm"
+                            type="submit"
+                            variant="outline"
+                          >
+                            <Check aria-hidden="true" className="h-4 w-4" />
+                            읽음 처리
+                          </Button>
+                        </form>
+                      </div>
                     </div>
-                  </Link>
+                  </div>
                 ))}
               </div>
             )}
