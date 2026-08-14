@@ -14,9 +14,8 @@ export const reservationStatusSchema = z.enum([
   "no_show"
 ]);
 
-export const createReservationSchema = z
+const reservationScheduleSchema = z
   .object({
-    customerId: z.string().trim().regex(/^\d+$/),
     title: z.string().trim().min(1).max(200),
     startAt: z.string().trim().datetime({ offset: true }),
     endAt: z.string().trim().datetime({ offset: true }),
@@ -29,9 +28,15 @@ export const createReservationSchema = z
     path: ["endAt"]
   });
 
+export const createReservationSchema = reservationScheduleSchema.extend({
+  customerId: z.string().trim().regex(/^\d+$/)
+});
+
 export const updateReservationStatusSchema = z.object({
   status: reservationStatusSchema
 });
+
+export const updateReservationSchema = reservationScheduleSchema;
 
 export const listReservationsSchema = z
   .object({
@@ -55,4 +60,5 @@ export type CreateReservationInput = z.infer<typeof createReservationSchema>;
 export type UpdateReservationStatusInput = z.infer<
   typeof updateReservationStatusSchema
 >;
+export type UpdateReservationInput = z.infer<typeof updateReservationSchema>;
 export type ListReservationsInput = z.infer<typeof listReservationsSchema>;

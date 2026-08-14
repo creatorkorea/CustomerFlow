@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import type {
   CreateReservationInput,
   ListReservationsInput,
+  UpdateReservationInput,
   UpdateReservationStatusInput
 } from "@/server/reservations/validation";
 import { AppError } from "@/server/shared/http-errors";
@@ -141,6 +142,47 @@ export async function listReservations({
     page,
     pageSize
   };
+}
+
+function reservationInclude() {
+  return {
+    customer: {
+      select: {
+        id: true,
+        name: true,
+        phone: true
+      }
+    },
+    user: {
+      select: {
+        id: true,
+        name: true
+      }
+    }
+  } satisfies Prisma.ReservationInclude;
+}
+
+export async function getReservation({
+  reservationId,
+  organizationId
+}: {
+  reservationId: bigint;
+  organizationId: bigint;
+}) {
+  const reservation = await prisma.reservation.findFirst({
+    where: {
+      id: reservationId,
+      organizationId,
+      deletedAt: null
+    },
+    include: reservationInclude()
+  });
+
+  if (!reservation) {
+    throw new AppError("NOT_FOUND", "예약을 찾을 수 없습니다.", 404);
+  }
+
+  return serializeReservation(reservation as ReservationWithRelations);
 }
 
 export async function createReservation({
@@ -365,4 +407,82 @@ export async function updateReservationStatus({
   return serializeReservation(
     reservationWithRelations as ReservationWithRelations
   );
+}
+
+export async function updateReservation({
+  reservationId,
+  organizationId,
+  userId,
+  input
+}: {
+  reservationId: bigint;
+  organizationId: bigint;
+  userId?: bigint;
+  input: UpdateReservationInput;
+}) {
+  const existing = await prisma.reservation.findFirst({
+    where: {
+      id: reservationId,
+      organizationId,
+      deletedAt: null
+    },
+    select: {
+      id: true,
+      customerId: true
+    }
+  });
+
+  if (!existing) {
+    throw new AppError("NOT_FOUND", "예약을 찾을 수 없습니다.", 404);
+  }
+
+  const customerStatus = customerStatusForReservationStatus(input.status);
+
+  const reservation = await prisma.$transaction(async (tx) => {
+    const updated = await tx.reservation.update({
+      where: {
+        id: reservationId
+      },
+      data: {
+        title: input.title,
+        startAt: new Date(input.startAt),
+        endAt: new Date(input.endAt),
+        location: input.location ?? null,
+        memo: input.memo ?? null,
+        status: input.status,
+        userId
+      },
+      include: reservationInclude()
+    });
+
+    if (customerStatus) {
+      await tx.customer.update({
+        where: {
+          id: existing.customerId
+        },
+        data: {
+          status: customerStatus
+        }
+      });
+    }
+
+    await tx.activityLog.create({
+      data: {
+        organizationId,
+        userId,
+        entityType: "RESERVATION",
+        entityId: reservationId,
+        action: "RESERVATION_UPDATED",
+        metadata: {
+          customerId: existing.customerId.toString(),
+          status: input.status,
+          source: "reservation-service"
+        }
+      }
+    });
+
+    return updated;
+  });
+
+  return serializeReservation(reservation as ReservationWithRelations);
 }

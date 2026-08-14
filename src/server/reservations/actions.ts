@@ -7,10 +7,12 @@ import { requireUser } from "@/server/auth/session";
 import type { ReservationActionState } from "@/server/reservations/action-state";
 import {
   createReservation,
+  updateReservation,
   updateReservationStatus
 } from "@/server/reservations/service";
 import {
   createReservationSchema,
+  updateReservationSchema,
   updateReservationStatusSchema
 } from "@/server/reservations/validation";
 
@@ -81,4 +83,35 @@ export async function updateReservationStatusAction(formData: FormData) {
   });
 
   revalidatePath("/reservations");
+}
+
+export async function updateReservationAction(formData: FormData) {
+  const user = await requireUser();
+  const reservationId = formData.get("reservationId");
+  const payload = formDataToObject(formData);
+  const parsed = updateReservationSchema.safeParse({
+    ...payload,
+    startAt: normalizeKstDateTimeLocal(payload.startAt),
+    endAt: normalizeKstDateTimeLocal(payload.endAt)
+  });
+
+  if (
+    !parsed.success ||
+    !user.organizationId ||
+    typeof reservationId !== "string" ||
+    !/^\d+$/.test(reservationId)
+  ) {
+    return;
+  }
+
+  await updateReservation({
+    reservationId: BigInt(reservationId),
+    organizationId: BigInt(user.organizationId),
+    userId: BigInt(user.id),
+    input: parsed.data
+  });
+
+  revalidatePath("/reservations");
+  revalidatePath(`/reservations/${reservationId}`);
+  revalidatePath("/dashboard");
 }

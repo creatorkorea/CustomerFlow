@@ -299,8 +299,11 @@ test("authenticated owner can create a consultation for a customer", async ({ pa
 });
 
 test("authenticated owner can create a reservation for a customer", async ({ page }) => {
+  test.setTimeout(60_000);
+
   const customerName = e2eName("예약");
   const reservationTitle = e2eName("방문 설치 예약");
+  const updatedReservationTitle = `${reservationTitle} 변경`;
 
   await page.goto("/login");
   await page.getByLabel("이메일").fill("owner@example.com");
@@ -312,7 +315,7 @@ test("authenticated owner can create a reservation for a customer", async ({ pag
   await page.getByLabel("고객명").fill(customerName);
   await page.getByLabel("전화번호", { exact: true }).fill("010-6666-0000");
   await page.getByRole("button", { name: "저장" }).click();
-  await expect(page).toHaveURL(/\/customers\/\d+/);
+  await expect(page).toHaveURL(/\/customers\/\d+/, { timeout: 15000 });
 
   await page.getByRole("link", { name: "예약 등록" }).click();
   await expect(page).toHaveURL(/\/reservations\/new\?customerId=\d+/);
@@ -325,19 +328,53 @@ test("authenticated owner can create a reservation for a customer", async ({ pag
   await page.getByRole("button", { name: "저장" }).click();
 
   await expect(page).toHaveURL(/\/reservations\?customerId=\d+/);
+  const customerId = new URL(page.url()).searchParams.get("customerId");
+  if (!customerId) {
+    throw new Error("Expected created reservation customerId in URL");
+  }
   await expect(page.getByRole("textbox", { name: "고객 검색" })).toHaveValue(
     new RegExp(customerName)
   );
   const reservationsTable = page.locator('[data-desktop-table="reservations"]');
   await expect(reservationsTable.getByText(reservationTitle)).toBeVisible();
-  await reservationsTable.getByRole("button", { name: "완료 처리" }).first().click();
+  const reservationDetailHref = await reservationsTable
+    .getByRole("link", { name: "상세 보기" })
+    .first()
+    .getAttribute("href");
+  expect(reservationDetailHref).toMatch(/^\/reservations\/\d+$/);
+  await page.goto(reservationDetailHref ?? "/reservations", {
+    waitUntil: "domcontentloaded"
+  });
+  await expect(page).toHaveURL(/\/reservations\/\d+/);
+  await expect(page.getByRole("heading", { name: "예약 상세" })).toBeVisible();
+  await expect(page.getByText(reservationTitle).first()).toBeVisible();
+  await page.getByLabel("예약명").fill(updatedReservationTitle);
+  await page.getByLabel("시작").fill("2026-08-14T11:00");
+  await page.getByLabel("종료").fill("2026-08-14T12:00");
+  await page.getByLabel("상태").selectOption("in_progress");
+  await page.getByLabel("장소").fill("서울 서초구");
+  await page.getByLabel("메모").fill("");
+  await page.getByRole("button", { name: "변경 저장" }).click();
+  await expect(page.getByText(updatedReservationTitle).first()).toBeVisible();
+  await expect(page.getByText("진행중").first()).toBeVisible();
+
+  await page.goto(`/reservations?customerId=${customerId}`);
+  await expect(page.getByRole("heading", { name: "예약" })).toBeVisible();
+  const refreshedReservationsTable = page.locator(
+    '[data-desktop-table="reservations"]'
+  );
+  await expect(page.getByRole("link", { name: "상세 보기" }).first()).toBeVisible();
+  await refreshedReservationsTable
+    .getByRole("button", { name: "완료 처리" })
+    .first()
+    .click();
   await expect(
-    page.getByRole("row", { name: new RegExp(`${reservationTitle}.*완료`) })
+    page.getByRole("row", { name: new RegExp(`${updatedReservationTitle}.*완료`) })
   ).toBeVisible();
 
-  await page.goto(page.url().replace(/\/reservations\?customerId=(\d+)/, "/customers/$1"));
+  await page.goto(`/customers/${customerId}`);
   await expect(page.getByRole("heading", { name: customerName })).toBeVisible();
-  await expect(page.getByText(reservationTitle).first()).toBeVisible();
+  await expect(page.getByText(updatedReservationTitle).first()).toBeVisible();
 });
 
 test("authenticated owner can create a follow-up for a customer", async ({ page }) => {

@@ -178,7 +178,12 @@ export default async function ReservationsPage({
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <div className="font-semibold text-slate-950">
-                        {reservation.title}
+                        <Link
+                          className="hover:text-teal-700"
+                          href={`/reservations/${reservation.id}`}
+                        >
+                          {reservation.title}
+                        </Link>
                       </div>
                       <Link
                         className="mt-1 block text-sm font-medium text-slate-600 hover:text-teal-700"
@@ -211,6 +216,12 @@ export default async function ReservationsPage({
                   </div>
                   {["scheduled", "in_progress"].includes(reservation.status) ? (
                     <div className="mt-4 flex flex-wrap gap-2">
+                      <Link
+                        className="inline-flex h-9 items-center justify-center rounded-md border border-[var(--border)] bg-white px-3 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
+                        href={`/reservations/${reservation.id}`}
+                      >
+                        상세 보기
+                      </Link>
                       {reservation.status === "scheduled" ? (
                         <form action={updateReservationStatusAction}>
                           <input
@@ -272,9 +283,12 @@ export default async function ReservationsPage({
                   {reservations.map((reservation) => (
                     <tr className="transition-colors hover:bg-teal-50/40" key={reservation.id}>
                       <td className="px-4 py-3">
-                        <div className="font-medium text-slate-950">
+                        <Link
+                          className="font-medium text-slate-950 hover:text-teal-700"
+                          href={`/reservations/${reservation.id}`}
+                        >
                           {reservation.title}
-                        </div>
+                        </Link>
                         <div className="mt-1 max-w-xs truncate text-xs text-slate-500">
                           {reservation.memo ?? "-"}
                         </div>
@@ -312,6 +326,12 @@ export default async function ReservationsPage({
                           reservation.status
                         ) ? (
                           <div className="flex flex-wrap gap-2">
+                            <Link
+                              className="inline-flex h-9 items-center justify-center rounded-md border border-[var(--border)] bg-white px-3 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
+                              href={`/reservations/${reservation.id}`}
+                            >
+                              상세 보기
+                            </Link>
                             {reservation.status === "scheduled" ? (
                               <form action={updateReservationStatusAction}>
                                 <input
@@ -353,7 +373,12 @@ export default async function ReservationsPage({
                             </form>
                           </div>
                         ) : (
-                          <span className="text-xs text-slate-500">처리됨</span>
+                          <Link
+                            className="inline-flex h-9 items-center justify-center rounded-md border border-[var(--border)] bg-white px-3 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
+                            href={`/reservations/${reservation.id}`}
+                          >
+                            상세 보기
+                          </Link>
                         )}
                       </td>
                     </tr>
