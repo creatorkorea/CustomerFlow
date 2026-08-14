@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/server/auth/session", () => ({
   requireOrganizationId: vi.fn(),
@@ -18,6 +18,10 @@ import {
 } from "@/server/consultations/service";
 
 describe("/api/consultations", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it("uses the session organization when listing consultations", async () => {
     vi.mocked(requireOrganizationId).mockResolvedValueOnce(7n);
     vi.mocked(listConsultations).mockResolvedValueOnce({
@@ -65,6 +69,37 @@ describe("/api/consultations", () => {
       success: false,
       error: {
         code: "VALIDATION_ERROR"
+      }
+    });
+  });
+
+  it("rejects consultation creation when the session has no organization", async () => {
+    vi.mocked(requireUser).mockResolvedValueOnce({
+      id: "3",
+      email: "owner@example.com",
+      name: "Owner",
+      role: "owner",
+      organizationId: ""
+    });
+
+    const response = await POST(
+      new Request("http://localhost/api/consultations", {
+        method: "POST",
+        body: JSON.stringify({
+          customerId: "21",
+          content: "상담 내용",
+          result: "상담 결과",
+          organizationId: "999"
+        })
+      })
+    );
+
+    expect(response.status).toBe(403);
+    expect(createConsultation).not.toHaveBeenCalled();
+    await expect(response.json()).resolves.toMatchObject({
+      success: false,
+      error: {
+        code: "FORBIDDEN"
       }
     });
   });

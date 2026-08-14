@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/server/auth/session", () => ({
   requireOrganizationId: vi.fn(),
@@ -15,6 +15,10 @@ import { requireOrganizationId, requireUser } from "@/server/auth/session";
 import { createCustomer, listCustomers } from "@/server/customers/service";
 
 describe("/api/customers", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it("uses the session organization when listing customers", async () => {
     vi.mocked(requireOrganizationId).mockResolvedValueOnce(7n);
     vi.mocked(listCustomers).mockResolvedValueOnce({
@@ -63,6 +67,36 @@ describe("/api/customers", () => {
       success: false,
       error: {
         code: "VALIDATION_ERROR"
+      }
+    });
+  });
+
+  it("rejects customer creation when the session has no organization", async () => {
+    vi.mocked(requireUser).mockResolvedValueOnce({
+      id: "3",
+      email: "owner@example.com",
+      name: "Owner",
+      role: "owner",
+      organizationId: ""
+    });
+
+    const response = await POST(
+      new Request("http://localhost/api/customers", {
+        method: "POST",
+        body: JSON.stringify({
+          name: "신규 고객",
+          phone: "010-1111-2222",
+          organizationId: "999"
+        })
+      })
+    );
+
+    expect(response.status).toBe(403);
+    expect(createCustomer).not.toHaveBeenCalled();
+    await expect(response.json()).resolves.toMatchObject({
+      success: false,
+      error: {
+        code: "FORBIDDEN"
       }
     });
   });

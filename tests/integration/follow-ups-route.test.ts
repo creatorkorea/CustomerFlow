@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/server/auth/session", () => ({
   requireOrganizationId: vi.fn(),
@@ -18,6 +18,10 @@ import {
 } from "@/server/follow-ups/service";
 
 describe("/api/follow-ups", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it("uses the session organization when listing follow-ups", async () => {
     vi.mocked(requireOrganizationId).mockResolvedValueOnce(7n);
     vi.mocked(listFollowUps).mockResolvedValueOnce({
@@ -66,6 +70,37 @@ describe("/api/follow-ups", () => {
       success: false,
       error: {
         code: "VALIDATION_ERROR"
+      }
+    });
+  });
+
+  it("rejects follow-up creation when the session has no organization", async () => {
+    vi.mocked(requireUser).mockResolvedValueOnce({
+      id: "3",
+      email: "owner@example.com",
+      name: "Owner",
+      role: "owner",
+      organizationId: ""
+    });
+
+    const response = await POST(
+      new Request("http://localhost/api/follow-ups", {
+        method: "POST",
+        body: JSON.stringify({
+          customerId: "21",
+          title: "예약 전 확인 연락",
+          dueAt: "2026-08-15T10:00:00+09:00",
+          organizationId: "999"
+        })
+      })
+    );
+
+    expect(response.status).toBe(403);
+    expect(createFollowUp).not.toHaveBeenCalled();
+    await expect(response.json()).resolves.toMatchObject({
+      success: false,
+      error: {
+        code: "FORBIDDEN"
       }
     });
   });

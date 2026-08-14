@@ -37,8 +37,12 @@ export async function POST(request: Request) {
     const user = await requireUser();
     const parsed = createCustomerSchema.safeParse(await request.json());
 
-    if (!parsed.success || !user.organizationId) {
+    if (!parsed.success) {
       return failure("VALIDATION_ERROR", "고객 정보를 확인해주세요.", 400);
+    }
+
+    if (!user.organizationId) {
+      return failure("FORBIDDEN", "사업장 권한을 확인할 수 없습니다.", 403);
     }
 
     const customer = await createCustomer({

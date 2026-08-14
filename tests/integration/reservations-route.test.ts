@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/server/auth/session", () => ({
   requireOrganizationId: vi.fn(),
@@ -18,6 +18,10 @@ import {
 } from "@/server/reservations/service";
 
 describe("/api/reservations", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it("uses the session organization when listing reservations", async () => {
     vi.mocked(requireOrganizationId).mockResolvedValueOnce(7n);
     vi.mocked(listReservations).mockResolvedValueOnce({
@@ -67,6 +71,38 @@ describe("/api/reservations", () => {
       success: false,
       error: {
         code: "VALIDATION_ERROR"
+      }
+    });
+  });
+
+  it("rejects reservation creation when the session has no organization", async () => {
+    vi.mocked(requireUser).mockResolvedValueOnce({
+      id: "3",
+      email: "owner@example.com",
+      name: "Owner",
+      role: "owner",
+      organizationId: ""
+    });
+
+    const response = await POST(
+      new Request("http://localhost/api/reservations", {
+        method: "POST",
+        body: JSON.stringify({
+          customerId: "21",
+          title: "방문 설치 예약",
+          startAt: "2026-08-14T10:00:00+09:00",
+          endAt: "2026-08-14T11:00:00+09:00",
+          organizationId: "999"
+        })
+      })
+    );
+
+    expect(response.status).toBe(403);
+    expect(createReservation).not.toHaveBeenCalled();
+    await expect(response.json()).resolves.toMatchObject({
+      success: false,
+      error: {
+        code: "FORBIDDEN"
       }
     });
   });
