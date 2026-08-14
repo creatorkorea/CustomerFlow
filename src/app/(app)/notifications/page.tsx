@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Bell, CheckCheck, Inbox } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -147,22 +148,32 @@ export default async function NotificationsPage({
                       {formatDateTime(notification.createdAt)}
                     </p>
                   </div>
-                  {notification.readAt ? null : (
-                    <form action={markNotificationReadAction}>
-                      <input
-                        name="notificationId"
-                        type="hidden"
-                        value={notification.id}
-                      />
-                      <Button
-                        className="w-full sm:w-auto"
-                        type="submit"
-                        variant="outline"
+                  <div className="flex flex-col gap-2 sm:flex-row">
+                    {notification.linkUrl ? (
+                      <Link
+                        className="inline-flex h-10 items-center justify-center rounded-md border border-[var(--border)] bg-white px-4 text-sm font-semibold text-slate-800 shadow-sm transition-colors hover:bg-slate-50"
+                        href={notification.linkUrl}
                       >
-                        읽음 처리
-                      </Button>
-                    </form>
-                  )}
+                        관련 화면 열기
+                      </Link>
+                    ) : null}
+                    {notification.readAt ? null : (
+                      <form action={markNotificationReadAction}>
+                        <input
+                          name="notificationId"
+                          type="hidden"
+                          value={notification.id}
+                        />
+                        <Button
+                          className="w-full sm:w-auto"
+                          type="submit"
+                          variant="outline"
+                        >
+                          읽음 처리
+                        </Button>
+                      </form>
+                    )}
+                  </div>
                 </li>
               ))}
             </ul>

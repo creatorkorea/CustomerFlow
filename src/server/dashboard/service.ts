@@ -1,4 +1,11 @@
+import type { Prisma } from "@prisma/client";
+
 import { prisma } from "@/lib/db";
+import {
+  formatActivityAction,
+  formatActivityEntity,
+  getActivityHref
+} from "@/server/activity-log/presentation";
 
 type DashboardOverviewParams = {
   organizationId: bigint;
@@ -35,6 +42,7 @@ type RecentActivity = {
   entityType: string;
   entityId: bigint | null;
   action: string;
+  metadata: Prisma.JsonValue | null;
   createdAt: Date;
   user: {
     name: string;
@@ -87,6 +95,13 @@ function serializeActivity(activity: RecentActivity) {
     entityType: activity.entityType,
     entityId: activity.entityId?.toString() ?? null,
     action: activity.action,
+    actionLabel: formatActivityAction(activity.action),
+    entityLabel: formatActivityEntity(activity.entityType),
+    href: getActivityHref({
+      entityType: activity.entityType,
+      entityId: activity.entityId,
+      metadata: activity.metadata
+    }),
     userName: activity.user?.name ?? null,
     createdAt: activity.createdAt.toISOString()
   };
@@ -141,25 +156,25 @@ export async function getDashboardOverview({
     }
   });
   const reservationQueue = await prisma.reservation.findMany({
-      where: {
-        organizationId,
-        deletedAt: null,
-        status: {
-          in: ["scheduled", "in_progress"]
-        },
-        startAt: todayRange
+    where: {
+      organizationId,
+      deletedAt: null,
+      status: {
+        in: ["scheduled", "in_progress"]
       },
-      include: {
-        customer: {
-          select: {
-            name: true,
-            phone: true
-          }
+      startAt: todayRange
+    },
+    include: {
+      customer: {
+        select: {
+          name: true,
+          phone: true
         }
-      },
-      orderBy: [{ startAt: "asc" }, { id: "desc" }],
-      take: 5
-    });
+      }
+    },
+    orderBy: [{ startAt: "asc" }, { id: "desc" }],
+    take: 5
+  });
   const followUpQueue = await prisma.followUp.findMany({
     where: {
       organizationId,

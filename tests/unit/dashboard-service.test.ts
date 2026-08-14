@@ -137,6 +137,9 @@ describe("dashboard service", () => {
         entityType: "CUSTOMER",
         entityId: 21n,
         action: "CUSTOMER_CREATED",
+        metadata: {
+          source: "customer-service"
+        },
         createdAt: new Date("2026-08-13T08:00:00.000Z"),
         user: {
           name: "홍길동"
@@ -178,6 +181,9 @@ describe("dashboard service", () => {
         entityType: "CUSTOMER",
         entityId: "21",
         action: "CUSTOMER_CREATED",
+        actionLabel: "고객 등록",
+        entityLabel: "고객",
+        href: "/customers/21",
         userName: "홍길동",
         createdAt: "2026-08-13T08:00:00.000Z"
       }

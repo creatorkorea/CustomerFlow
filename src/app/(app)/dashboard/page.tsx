@@ -188,12 +188,17 @@ export default async function DashboardPage() {
             ) : (
               <div className="space-y-3">
                 {overview.recentActivities.map((activity) => (
-                  <div
-                    className="rounded-md border border-[var(--border)] bg-white px-3 py-3"
+                  <Link
+                    aria-disabled={!activity.href}
+                    className="block rounded-md border border-[var(--border)] bg-white px-3 py-3 transition-colors hover:border-teal-300 hover:bg-teal-50/50"
+                    href={activity.href ?? "/dashboard"}
                     key={activity.id}
                   >
-                    <div className="text-sm font-semibold text-slate-950">
-                      {activity.action}
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="text-sm font-semibold text-slate-950">
+                        {activity.actionLabel}
+                      </div>
+                      <Badge variant="neutral">{activity.entityLabel}</Badge>
                     </div>
                     <div className="mt-1 text-xs text-slate-500">
                       {activity.userName ?? "시스템"} ·{" "}
@@ -203,7 +208,7 @@ export default async function DashboardPage() {
                         timeZone: "Asia/Seoul"
                       }).format(new Date(activity.createdAt))}
                     </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
             )}
