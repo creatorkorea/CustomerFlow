@@ -192,6 +192,17 @@ test("authenticated owner can create a customer", async ({ page }) => {
   await expect(page.getByRole("link", { name: "상담 등록" })).toBeVisible();
   await expect(page.getByRole("link", { name: "예약 등록" })).toBeVisible();
   await expect(page.getByRole("link", { name: "후속관리 등록" })).toBeVisible();
+
+  await page
+    .getByRole("searchbox", { name: "고객 또는 전화번호 검색" })
+    .fill(customerName);
+  await page
+    .getByRole("searchbox", { name: "고객 또는 전화번호 검색" })
+    .press("Enter");
+  await expect(page).toHaveURL(/\/customers\?search=/);
+  await expect(page.locator('[data-desktop-table="customers"]')).toContainText(
+    customerName
+  );
 });
 
 test("authenticated owner can update and soft delete a customer", async ({ page }) => {

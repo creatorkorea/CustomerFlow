@@ -18,7 +18,12 @@ export function AppHeader({
 
   return (
     <header className="flex h-16 items-center gap-3 border-b border-[var(--border)] bg-white px-4 md:px-6">
-      <div className="relative max-w-2xl flex-1">
+      <form
+        action="/customers"
+        className="relative max-w-2xl flex-1"
+        method="get"
+        role="search"
+      >
         <Search
           aria-hidden="true"
           className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
@@ -26,9 +31,11 @@ export function AppHeader({
         <Input
           aria-label="고객 또는 전화번호 검색"
           className="pl-9"
+          name="search"
           placeholder="고객명, 전화번호, 이메일 검색"
+          type="search"
         />
-      </div>
+      </form>
       <Button aria-label="도움말" className="hidden sm:inline-flex" size="icon" variant="ghost">
         <HelpCircle aria-hidden="true" className="h-4 w-4" />
       </Button>
