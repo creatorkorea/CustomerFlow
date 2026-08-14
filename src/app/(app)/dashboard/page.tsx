@@ -16,6 +16,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { requirePageUser } from "@/server/auth/session";
 import { getDashboardOverview } from "@/server/dashboard/service";
 import { markNotificationReadAction } from "@/server/notifications/actions";
+import { DashboardActivityItem } from "./dashboard-activity-item";
 
 function formatTime(value: string) {
   return new Intl.DateTimeFormat("ko-KR", {
@@ -304,23 +305,13 @@ export default async function DashboardPage() {
             ) : (
               <div className="space-y-3">
                 {overview.recentActivities.map((activity) => (
-                  <Link
-                    aria-disabled={!activity.href}
-                    className="block rounded-md border border-[var(--border)] bg-white px-3 py-3 transition-colors hover:border-teal-300 hover:bg-teal-50/50"
-                    href={activity.href ?? "/dashboard"}
+                  <DashboardActivityItem
+                    activity={{
+                      ...activity,
+                      createdAtLabel: formatDateTime(activity.createdAt)
+                    }}
                     key={activity.id}
-                  >
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="min-w-0 truncate text-sm font-semibold text-slate-950">
-                        {activity.actionLabel}
-                      </div>
-                      <Badge variant="neutral">{activity.entityLabel}</Badge>
-                    </div>
-                    <div className="mt-1 truncate text-xs text-slate-500">
-                      {activity.userName ?? "시스템"} ·{" "}
-                      {formatDateTime(activity.createdAt)}
-                    </div>
-                  </Link>
+                  />
                 ))}
               </div>
             )}
