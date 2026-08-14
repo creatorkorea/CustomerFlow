@@ -175,6 +175,9 @@ test("authenticated owner can create a customer", async ({ page }) => {
 
   await expect(page).toHaveURL(/\/customers\/\d+/);
   await expect(page.getByRole("heading", { name: customerName })).toBeVisible();
+  await expect(page.getByRole("link", { name: "상담 등록" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "예약 등록" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "후속관리 등록" })).toBeVisible();
 });
 
 test("authenticated owner can update and soft delete a customer", async ({ page }) => {
@@ -234,6 +237,9 @@ test("authenticated owner can create a consultation for a customer", async ({ pa
 
   await page.goto(page.url().replace(/\/consultations\?customerId=(\d+)/, "/customers/$1"));
   await expect(page.getByRole("heading", { name: customerName })).toBeVisible();
+  await expect(page.getByText(consultationContent).first()).toBeVisible();
+  await page.locator('a[href$="?timelineType=consultation"]').click();
+  await expect(page).toHaveURL(/timelineType=consultation/);
   await expect(page.getByText(consultationContent).first()).toBeVisible();
 });
 

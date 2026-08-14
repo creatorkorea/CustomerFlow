@@ -1,11 +1,19 @@
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import {
+  ArrowLeft,
+  CalendarPlus,
+  ClipboardPlus,
+  MessageSquarePlus
+} from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireOrganizationId } from "@/server/auth/session";
 import { getCustomer } from "@/server/customers/service";
-import { listCustomerTimeline } from "@/server/customers/timeline-service";
+import {
+  listCustomerTimeline,
+  type CustomerTimelineType
+} from "@/server/customers/timeline-service";
 import { listTags } from "@/server/tags/service";
 import { notFound } from "next/navigation";
 import { CustomerEditForm } from "./customer-edit-form";
@@ -32,13 +40,28 @@ type CustomerDetailPageProps = {
   params: Promise<{
     id: string;
   }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
+function firstParam(value: string | string[] | undefined) {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+function parseTimelineType(value: string | undefined) {
+  return value === "consultation" ||
+    value === "reservation" ||
+    value === "followUp"
+    ? value
+    : undefined;
+}
+
 export default async function CustomerDetailPage({
-  params
+  params,
+  searchParams
 }: CustomerDetailPageProps) {
   const organizationId = await requireOrganizationId();
   const { id } = await params;
+  const timelineType = parseTimelineType(firstParam((await searchParams).timelineType));
   const customer = await getCustomer({
     customerId: BigInt(id),
     organizationId
@@ -54,8 +77,10 @@ export default async function CustomerDetailPage({
   });
   const timeline = await listCustomerTimeline({
     customerId: BigInt(id),
-    organizationId
+    organizationId,
+    type: timelineType
   });
+  const customerId = customer.id;
 
   return (
     <div className="space-y-6">
@@ -67,7 +92,7 @@ export default async function CustomerDetailPage({
           <ArrowLeft aria-hidden="true" className="h-4 w-4" />
           고객 목록
         </Link>
-        <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-5 flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight text-slate-950">
               {customer.name}
@@ -75,10 +100,35 @@ export default async function CustomerDetailPage({
             <p className="mt-2 text-sm text-slate-600">
               {customer.phone ?? "전화번호 없음"}
             </p>
+            <div className="mt-3">
+              <Badge variant={statusVariants[customer.status]}>
+                {statusLabels[customer.status]}
+              </Badge>
+            </div>
           </div>
-          <Badge variant={statusVariants[customer.status]}>
-            {statusLabels[customer.status]}
-          </Badge>
+          <div className="grid gap-2 sm:grid-cols-3 xl:w-auto">
+            <Link
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[var(--border)] bg-white px-4 text-sm font-semibold text-slate-800 shadow-sm transition-colors hover:bg-slate-50"
+              href={`/consultations/new?customerId=${customerId}`}
+            >
+              <MessageSquarePlus aria-hidden="true" className="h-4 w-4" />
+              상담 등록
+            </Link>
+            <Link
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[var(--border)] bg-white px-4 text-sm font-semibold text-slate-800 shadow-sm transition-colors hover:bg-slate-50"
+              href={`/reservations/new?customerId=${customerId}`}
+            >
+              <CalendarPlus aria-hidden="true" className="h-4 w-4" />
+              예약 등록
+            </Link>
+            <Link
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-[var(--primary)] px-4 text-sm font-semibold text-[var(--primary-foreground)] shadow-sm transition-colors hover:bg-teal-700"
+              href={`/follow-ups/new?customerId=${customerId}`}
+            >
+              <ClipboardPlus aria-hidden="true" className="h-4 w-4" />
+              후속관리 등록
+            </Link>
+          </div>
         </div>
       </div>
       <section className="grid gap-4 lg:grid-cols-[320px_1fr]">
@@ -98,7 +148,28 @@ export default async function CustomerDetailPage({
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>활동 타임라인</CardTitle>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <CardTitle>활동 타임라인</CardTitle>
+              <div className="flex flex-wrap gap-2">
+                {timelineFilters.map((filter) => {
+                  const isActive = filter.value === timelineType;
+
+                  return (
+                    <Link
+                      className={`inline-flex h-8 items-center justify-center rounded-md border px-3 text-xs font-semibold transition-colors ${
+                        isActive
+                          ? "border-teal-600 bg-teal-50 text-teal-800"
+                          : "border-[var(--border)] bg-white text-slate-700 hover:bg-slate-50"
+                      }`}
+                      href={filter.href(customerId)}
+                      key={filter.label}
+                    >
+                      {filter.label}
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
             {timeline.length === 0 ? (
@@ -161,6 +232,32 @@ const timelineTypeLabels = {
   reservation: "예약",
   followUp: "후속관리"
 };
+
+const timelineFilters: Array<{
+  label: string;
+  value?: CustomerTimelineType;
+  href: (customerId: string) => string;
+}> = [
+  {
+    label: "전체",
+    href: (customerId) => `/customers/${customerId}`
+  },
+  {
+    label: "상담",
+    value: "consultation",
+    href: (customerId) => `/customers/${customerId}?timelineType=consultation`
+  },
+  {
+    label: "예약",
+    value: "reservation",
+    href: (customerId) => `/customers/${customerId}?timelineType=reservation`
+  },
+  {
+    label: "후속관리",
+    value: "followUp",
+    href: (customerId) => `/customers/${customerId}?timelineType=followUp`
+  }
+];
 
 const timelineVariantByType = {
   consultation: "default",

@@ -128,4 +128,43 @@ describe("customer timeline service", () => {
       })
     ]);
   });
+
+  it("queries only the selected timeline type when a type filter is provided", async () => {
+    vi.mocked(prisma.reservation.findMany).mockResolvedValueOnce([
+      {
+        id: 41n,
+        title: "방문 설치 예약",
+        status: "scheduled",
+        startAt: new Date("2026-08-14T01:00:00.000Z"),
+        endAt: new Date("2026-08-14T02:00:00.000Z"),
+        location: "서울 강남구",
+        createdAt: new Date("2026-08-13T02:00:00.000Z"),
+        user: null
+      }
+    ] as never);
+
+    const result = await listCustomerTimeline({
+      organizationId: 7n,
+      customerId: 21n,
+      type: "reservation"
+    });
+
+    expect(prisma.consultation.findMany).not.toHaveBeenCalled();
+    expect(prisma.followUp.findMany).not.toHaveBeenCalled();
+    expect(prisma.reservation.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          organizationId: 7n,
+          customerId: 21n,
+          deletedAt: null
+        }
+      })
+    );
+    expect(result).toEqual([
+      expect.objectContaining({
+        id: "reservation-41",
+        type: "reservation"
+      })
+    ]);
+  });
 });
