@@ -4,14 +4,26 @@ import { ArrowLeft } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireOrganizationId } from "@/server/auth/session";
-import { listCustomers } from "@/server/customers/service";
+import { listCustomerPickerOptions } from "@/server/customers/picker-options";
 import { ConsultationForm } from "./consultation-form";
 
-export default async function NewConsultationPage() {
+type NewConsultationPageProps = {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+};
+
+function firstParam(value: string | string[] | undefined) {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+export default async function NewConsultationPage({
+  searchParams
+}: NewConsultationPageProps) {
   const organizationId = await requireOrganizationId();
-  const { customers } = await listCustomers({
+  const params = await searchParams;
+  const defaultCustomerId = firstParam(params.customerId);
+  const customers = await listCustomerPickerOptions({
     organizationId,
-    pageSize: 100
+    defaultCustomerId
   });
 
   return (
@@ -45,7 +57,10 @@ export default async function NewConsultationPage() {
               먼저 고객을 등록한 뒤 상담을 남길 수 있습니다.
             </div>
           ) : (
-            <ConsultationForm customers={customers} />
+            <ConsultationForm
+              customers={customers}
+              defaultCustomerId={defaultCustomerId}
+            />
           )}
         </CardContent>
       </Card>

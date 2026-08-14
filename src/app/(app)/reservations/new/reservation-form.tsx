@@ -3,16 +3,16 @@
 import { useActionState } from "react";
 import { Save } from "lucide-react";
 
+import {
+  CustomerPicker,
+  type CustomerPickerCustomer
+} from "@/components/forms/customer-picker";
 import { Button } from "@/components/ui/button";
 import { initialReservationActionState } from "@/server/reservations/action-state";
 import { createReservationAction } from "@/server/reservations/actions";
 
 type ReservationFormProps = {
-  customers: Array<{
-    id: string;
-    name: string;
-    phone: string | null;
-  }>;
+  customers: CustomerPickerCustomer[];
   defaultCustomerId?: string;
 };
 
@@ -40,23 +40,7 @@ export function ReservationForm({
           {state.message}
         </div>
       ) : null}
-      <label className="space-y-2">
-        <span className="text-sm font-semibold text-slate-700">고객</span>
-        <select
-          className="form-select w-full"
-          defaultValue={defaultCustomerId ?? ""}
-          name="customerId"
-          required
-        >
-          <option value="">고객 선택</option>
-          {customers.map((customer) => (
-            <option key={customer.id} value={customer.id}>
-              {customer.name}
-              {customer.phone ? ` / ${customer.phone}` : ""}
-            </option>
-          ))}
-        </select>
-      </label>
+      <CustomerPicker customers={customers} defaultCustomerId={defaultCustomerId} />
       <label className="space-y-2">
         <span className="text-sm font-semibold text-slate-700">예약명</span>
         <input

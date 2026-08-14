@@ -3,16 +3,16 @@
 import { useActionState } from "react";
 import { Save } from "lucide-react";
 
+import {
+  CustomerPicker,
+  type CustomerPickerCustomer
+} from "@/components/forms/customer-picker";
 import { Button } from "@/components/ui/button";
 import { initialFollowUpActionState } from "@/server/follow-ups/action-state";
 import { createFollowUpAction } from "@/server/follow-ups/actions";
 
 type FollowUpFormProps = {
-  customers: Array<{
-    id: string;
-    name: string;
-    phone: string | null;
-  }>;
+  customers: CustomerPickerCustomer[];
   defaultConsultationId?: string;
   defaultCustomerId?: string;
 };
@@ -40,23 +40,7 @@ export function FollowUpForm({
           {state.message}
         </div>
       ) : null}
-      <label className="space-y-2">
-        <span className="text-sm font-semibold text-slate-700">고객</span>
-        <select
-          className="form-select w-full"
-          defaultValue={defaultCustomerId ?? ""}
-          name="customerId"
-          required
-        >
-          <option value="">고객 선택</option>
-          {customers.map((customer) => (
-            <option key={customer.id} value={customer.id}>
-              {customer.name}
-              {customer.phone ? ` / ${customer.phone}` : ""}
-            </option>
-          ))}
-        </select>
-      </label>
+      <CustomerPicker customers={customers} defaultCustomerId={defaultCustomerId} />
       <label className="space-y-2">
         <span className="text-sm font-semibold text-slate-700">할 일</span>
         <input

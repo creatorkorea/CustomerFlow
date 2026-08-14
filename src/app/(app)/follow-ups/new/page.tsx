@@ -4,7 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireOrganizationId } from "@/server/auth/session";
-import { listCustomers } from "@/server/customers/service";
+import { listCustomerPickerOptions } from "@/server/customers/picker-options";
 import { FollowUpForm } from "./follow-up-form";
 
 type NewFollowUpPageProps = {
@@ -22,9 +22,9 @@ export default async function NewFollowUpPage({
   const params = await searchParams;
   const defaultConsultationId = firstParam(params.consultationId);
   const defaultCustomerId = firstParam(params.customerId);
-  const { customers } = await listCustomers({
+  const customers = await listCustomerPickerOptions({
     organizationId,
-    pageSize: 100
+    defaultCustomerId
   });
 
   return (

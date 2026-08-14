@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
 import { prisma } from "../src/lib/db";
 
@@ -6,6 +6,20 @@ const e2eRunPrefix = `E2E ${Date.now()}`;
 
 function e2eName(label: string) {
   return `${e2eRunPrefix} ${label} ${Date.now()}`;
+}
+
+async function chooseCustomer(page: Page, query: string, customerName: string) {
+  const selectedCustomerId = await page.locator('input[name="customerId"]').inputValue();
+
+  if (selectedCustomerId) {
+    await expect(page.getByRole("textbox", { name: "고객 검색" })).toHaveValue(
+      new RegExp(customerName)
+    );
+    return;
+  }
+
+  await page.getByRole("textbox", { name: "고객 검색" }).fill(query);
+  await page.getByRole("option", { name: new RegExp(customerName) }).click();
 }
 
 test.afterAll(async () => {
@@ -221,10 +235,9 @@ test("authenticated owner can create a consultation for a customer", async ({ pa
   await page.getByRole("button", { name: "저장" }).click();
   await expect(page).toHaveURL(/\/customers\/\d+/);
 
-  await page.goto("/consultations/new");
-  await page.locator('select[name="customerId"]').selectOption({
-    label: `${customerName} / 010-7777-0000`
-  });
+  await page.getByRole("link", { name: "상담 등록" }).click();
+  await expect(page).toHaveURL(/\/consultations\/new\?customerId=\d+/);
+  await chooseCustomer(page, customerName, customerName);
   await page.getByLabel("상담 내용").fill(consultationContent);
   await page.getByLabel("상담 결과").fill("토요일 오후 가능 안내");
   await page.getByLabel("다음 액션").fill("예약 확정 연락");
@@ -260,10 +273,9 @@ test("authenticated owner can create a reservation for a customer", async ({ pag
   await page.getByRole("button", { name: "저장" }).click();
   await expect(page).toHaveURL(/\/customers\/\d+/);
 
-  await page.goto("/reservations/new");
-  await page.locator('select[name="customerId"]').selectOption({
-    label: `${customerName} / 010-6666-0000`
-  });
+  await page.getByRole("link", { name: "예약 등록" }).click();
+  await expect(page).toHaveURL(/\/reservations\/new\?customerId=\d+/);
+  await chooseCustomer(page, customerName, customerName);
   await page.getByLabel("예약명").fill(reservationTitle);
   await page.getByLabel("시작").fill("2026-08-14T10:00");
   await page.getByLabel("종료").fill("2026-08-14T11:00");
@@ -300,10 +312,9 @@ test("authenticated owner can create a follow-up for a customer", async ({ page 
   await page.getByRole("button", { name: "저장" }).click();
   await expect(page).toHaveURL(/\/customers\/\d+/);
 
-  await page.goto("/follow-ups/new");
-  await page.locator('select[name="customerId"]').selectOption({
-    label: `${customerName} / 010-5555-0000`
-  });
+  await page.getByRole("link", { name: "후속관리 등록" }).click();
+  await expect(page).toHaveURL(/\/follow-ups\/new\?customerId=\d+/);
+  await chooseCustomer(page, customerName, customerName);
   await page.getByLabel("할 일").fill(followUpTitle);
   await page.getByLabel("마감").fill("2026-08-15T10:00");
   await page.getByLabel("메모").fill("방문 가능 여부 재확인");

@@ -6,8 +6,11 @@ const protectedViews = [
   { path: "/dashboard", heading: "오늘 해야 할 일", name: "dashboard" },
   { path: "/customers", heading: "고객", name: "customers" },
   { path: "/consultations", heading: "상담", name: "consultations" },
+  { path: "/consultations/new", heading: "상담 등록", name: "consultations-new" },
   { path: "/reservations", heading: "예약", name: "reservations" },
+  { path: "/reservations/new", heading: "예약 등록", name: "reservations-new" },
   { path: "/follow-ups", heading: "후속관리", name: "follow-ups" },
+  { path: "/follow-ups/new", heading: "후속관리 등록", name: "follow-ups-new" },
   { path: "/notifications", heading: "알림", name: "notifications" },
   { path: "/settings/business", heading: "사업장 설정", name: "settings-business" }
 ];
@@ -17,6 +20,12 @@ const mobileCardListViews = new Set([
   "consultations",
   "reservations",
   "follow-ups"
+]);
+
+const customerPickerViews = new Set([
+  "consultations-new",
+  "reservations-new",
+  "follow-ups-new"
 ]);
 
 async function login(page: Page) {
@@ -42,6 +51,9 @@ test("primary app views pass desktop UI smoke checks", async ({ page }) => {
   for (const view of protectedViews) {
     await page.goto(view.path);
     await expect(page.getByRole("heading", { name: view.heading })).toBeVisible();
+    if (customerPickerViews.has(view.name)) {
+      await expect(page.getByRole("textbox", { name: "고객 검색" })).toBeVisible();
+    }
     await expectNoBodyOverflow(page);
     await page.screenshot({
       caret: "initial",
@@ -58,6 +70,9 @@ test("primary app views pass mobile UI smoke checks", async ({ page }) => {
   for (const view of protectedViews) {
     await page.goto(view.path);
     await expect(page.getByRole("heading", { name: view.heading })).toBeVisible();
+    if (customerPickerViews.has(view.name)) {
+      await expect(page.getByRole("textbox", { name: "고객 검색" })).toBeVisible();
+    }
     if (mobileCardListViews.has(view.name)) {
       await expect(page.locator(`[data-mobile-list="${view.name}"]`)).toBeVisible();
       await expect(

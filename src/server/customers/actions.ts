@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { requireUser } from "@/server/auth/session";
@@ -24,6 +25,13 @@ function formDataToObject(formData: FormData) {
   };
 }
 
+function revalidateCustomerWorkflowPaths() {
+  revalidatePath("/customers");
+  revalidatePath("/consultations/new");
+  revalidatePath("/reservations/new");
+  revalidatePath("/follow-ups/new");
+}
+
 export async function createCustomerAction(
   _previousState: CustomerActionState,
   formData: FormData
@@ -44,6 +52,7 @@ export async function createCustomerAction(
     input: parsed.data
   });
 
+  revalidateCustomerWorkflowPaths();
   redirect(`/customers/${customer.id}`);
 }
 
@@ -69,6 +78,8 @@ export async function updateCustomerAction(
     input: parsed.data
   });
 
+  revalidateCustomerWorkflowPaths();
+  revalidatePath(`/customers/${customerId}`);
   redirect(`/customers/${customerId}`);
 }
 
@@ -85,5 +96,7 @@ export async function deleteCustomerAction(customerId: string) {
     userId: BigInt(user.id)
   });
 
+  revalidateCustomerWorkflowPaths();
+  revalidatePath(`/customers/${customerId}`);
   redirect("/customers");
 }
