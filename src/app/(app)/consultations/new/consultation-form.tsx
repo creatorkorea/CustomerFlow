@@ -113,15 +113,24 @@ export function ConsultationForm({
       <label className="space-y-2">
         <span className="text-sm font-semibold text-slate-700">다음 액션</span>
         <input
-          className="flex h-10 w-full rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm text-slate-950 outline-none transition-colors placeholder:text-[var(--muted-foreground)] focus-visible:border-[var(--ring)] focus-visible:ring-4 focus-visible:ring-teal-500/10"
+          className="form-input w-full"
           name="nextAction"
           placeholder="견적 확인 후 연락"
         />
       </label>
-      <Button disabled={isPending || customers.length === 0} type="submit">
-        <Save aria-hidden="true" className="h-4 w-4" />
-        {isPending ? "저장 중" : "저장"}
-      </Button>
+      <div className="flex flex-col gap-2 border-t border-[var(--border)] pt-5 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-sm text-slate-500">
+          저장 후 상담 상세에서 결과와 다음 액션을 바로 업데이트할 수 있습니다.
+        </p>
+        <Button
+          className="sm:min-w-28"
+          disabled={isPending || customers.length === 0}
+          type="submit"
+        >
+          <Save aria-hidden="true" className="h-4 w-4" />
+          {isPending ? "저장 중" : "저장"}
+        </Button>
+      </div>
     </form>
   );
 }

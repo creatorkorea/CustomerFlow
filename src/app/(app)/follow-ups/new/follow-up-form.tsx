@@ -44,7 +44,7 @@ export function FollowUpForm({
       <label className="space-y-2">
         <span className="text-sm font-semibold text-slate-700">할 일</span>
         <input
-          className="flex h-10 w-full rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm text-slate-950 outline-none transition-colors placeholder:text-[var(--muted-foreground)] focus-visible:border-[var(--ring)] focus-visible:ring-4 focus-visible:ring-teal-500/10"
+          className="form-input w-full"
           name="title"
           placeholder="예약 전 확인 연락"
           required
@@ -54,7 +54,7 @@ export function FollowUpForm({
         <label className="space-y-2">
           <span className="text-sm font-semibold text-slate-700">마감</span>
           <input
-            className="flex h-10 w-full rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm text-slate-950 outline-none transition-colors focus-visible:border-[var(--ring)] focus-visible:ring-4 focus-visible:ring-teal-500/10"
+            className="form-input w-full"
             name="dueAt"
             type="datetime-local"
             required
@@ -74,7 +74,7 @@ export function FollowUpForm({
       <label className="space-y-2">
         <span className="text-sm font-semibold text-slate-700">상담 ID</span>
         <input
-          className="flex h-10 w-full rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm text-slate-950 outline-none transition-colors placeholder:text-[var(--muted-foreground)] focus-visible:border-[var(--ring)] focus-visible:ring-4 focus-visible:ring-teal-500/10"
+          className="form-input w-full"
           inputMode="numeric"
           defaultValue={defaultConsultationId ?? ""}
           name="consultationId"
@@ -89,10 +89,19 @@ export function FollowUpForm({
           placeholder="연락 전 확인할 내용"
         />
       </label>
-      <Button disabled={isPending || customers.length === 0} type="submit">
-        <Save aria-hidden="true" className="h-4 w-4" />
-        {isPending ? "저장 중" : "저장"}
-      </Button>
+      <div className="flex flex-col gap-2 border-t border-[var(--border)] pt-5 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-sm text-slate-500">
+          저장 후 후속관리 상세에서 마감과 처리 상태를 계속 관리합니다.
+        </p>
+        <Button
+          className="sm:min-w-28"
+          disabled={isPending || customers.length === 0}
+          type="submit"
+        >
+          <Save aria-hidden="true" className="h-4 w-4" />
+          {isPending ? "저장 중" : "저장"}
+        </Button>
+      </div>
     </form>
   );
 }

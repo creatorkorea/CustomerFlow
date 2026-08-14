@@ -50,6 +50,7 @@ select {
   font: inherit;
 }
 
+.form-input,
 .form-select,
 .form-textarea {
   display: block;
@@ -64,6 +65,7 @@ select {
     box-shadow 150ms ease;
 }
 
+.form-input,
 .form-select {
   height: 2.5rem;
   padding: 0 0.75rem;
@@ -74,12 +76,19 @@ select {
   padding: 0.625rem 0.75rem;
 }
 
+.form-input:focus-visible,
 .form-select:focus-visible,
 .form-textarea:focus-visible {
   border-color: var(--ring);
   box-shadow: 0 0 0 3px rgb(13 148 136 / 0.14);
 }
 
+.form-input::placeholder,
+.form-textarea::placeholder {
+  color: var(--muted-foreground);
+}
+
+.form-input:disabled,
 .form-select:disabled,
 .form-textarea:disabled {
   cursor: not-allowed;

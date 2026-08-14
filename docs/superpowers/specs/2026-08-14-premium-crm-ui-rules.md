@@ -154,6 +154,26 @@ Avoid:
   - reservation progress/completion/cancellation
   - follow-up completion/cancellation
 
+### Workflow Forms And Detail
+
+- Consultation, reservation, and follow-up create screens should use the same compact work-form structure:
+  - premium white page header surface
+  - Korean operational badge such as `상담 업무`, `예약 업무`, or `후속관리 업무`
+  - `text-3xl` page heading
+  - one bordered form card with a divided card header
+- Keep route headings and form labels stable:
+  - `상담 등록`, `예약 등록`, `후속관리 등록`
+  - `상담 내용`, `상담 결과`, `다음 액션`
+  - `예약명`, `시작`, `종료`, `장소`, `메모`
+  - `할 일`, `마감`, `상담 ID`, `상태`
+- Form submit areas should be separated with a top border and include a short operational helper sentence plus the single primary `저장` action.
+- Detail screens should use the same structure across workflow types:
+  - white summary header with back link, Korean workflow badge, title, explanatory copy, and visible customer/action links
+  - main record card with bordered summary chips using `--surface-subtle`
+  - right-side update card with a divided card header and one full-width `변경 저장` action
+- Use `form-input`, `form-select`, and `form-textarea` instead of repeated ad hoc input class strings.
+- Hover and primary button states should use CSS variables such as `--primary`, `--primary-hover`, and `--surface-subtle`, not hardcoded teal utility colors.
+
 ### Customer Detail
 
 - Top area is an identity summary:
@@ -240,6 +260,9 @@ Avoid:
   - `저장`
   - `변경 저장`
   - `고객 삭제`
+  - `상담 상세`
+  - `예약 상세`
+  - `후속관리 상세`
 - Do not introduce new schema fields for the UI refresh.
 - Do not expose inactive P2 controls.
 
@@ -254,6 +277,7 @@ Avoid:
 
 - Current tests, lint, build, and E2E pass.
 - `/dashboard`, `/customers`, `/customers/new`, and `/customers/[id]` visibly follow the hybrid direction.
+- `/consultations`, `/reservations`, `/follow-ups`, and their create/detail screens visibly follow the same workflow UI direction.
 - The app looks like one coherent product, not a set of individually styled pages.
 - There are no decorative blobs, no nested card stacks, no marketing hero sections, and no inactive P2 primary navigation.
 - Desktop and mobile views remain readable with no overlapping text or controls.

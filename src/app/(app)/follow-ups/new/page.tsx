@@ -29,24 +29,24 @@ export default async function NewFollowUpPage({
 
   return (
     <div className="max-w-3xl space-y-6">
-      <div>
+      <div className="rounded-lg border border-[var(--border)] bg-white p-5 shadow-sm">
         <Link
-          className="inline-flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-slate-950"
+          className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-[var(--primary)]"
           href="/follow-ups"
         >
           <ArrowLeft aria-hidden="true" className="h-4 w-4" />
           후속관리 목록
         </Link>
-        <Badge className="mt-5">Follow-ups</Badge>
-        <h1 className="mt-3 text-2xl font-semibold tracking-tight text-slate-950">
+        <Badge className="mt-5">후속관리 업무</Badge>
+        <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950">
           후속관리 등록
         </h1>
         <p className="mt-2 text-sm text-slate-600">
           고객에게 다시 연락하거나 확인해야 할 일을 마감 시간과 함께 남깁니다.
         </p>
       </div>
-      <Card>
-        <CardHeader>
+      <Card className="overflow-hidden">
+        <CardHeader className="border-b border-[var(--border)]">
           <CardTitle>후속관리 정보</CardTitle>
           <p className="mt-2 text-sm text-slate-600">
             같은 사업장 고객에게만 후속관리 항목을 연결할 수 있습니다.

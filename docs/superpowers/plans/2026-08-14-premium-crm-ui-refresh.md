@@ -135,3 +135,29 @@
 - [x] Refresh follow-up list header, filter bar, table header, mobile cards, and status actions.
 - [x] Document workflow list rules in the premium CRM UI rules.
 - [x] Run focused workflow tests and full UI verification.
+
+### Task 8: Workflow Forms And Detail Extension
+
+**Files:**
+- Modify: `src/app/(app)/consultations/new/page.tsx`
+- Modify: `src/app/(app)/consultations/new/consultation-form.tsx`
+- Modify: `src/app/(app)/consultations/[id]/page.tsx`
+- Modify: `src/app/(app)/reservations/new/page.tsx`
+- Modify: `src/app/(app)/reservations/new/reservation-form.tsx`
+- Modify: `src/app/(app)/reservations/[id]/page.tsx`
+- Modify: `src/app/(app)/follow-ups/new/page.tsx`
+- Modify: `src/app/(app)/follow-ups/new/follow-up-form.tsx`
+- Modify: `src/app/(app)/follow-ups/[id]/page.tsx`
+- Modify: `src/app/globals.css`
+- Modify: `docs/superpowers/specs/2026-08-14-premium-crm-ui-rules.md`
+
+**Interfaces:**
+- Consumes: existing workflow create/update server actions, route params, and picker options.
+- Produces: same create/detail routes with coherent work-form headers, divided panels, summary chips, and action rows.
+
+- [x] Add shared `form-input` styling for workflow inputs.
+- [x] Refresh consultation create form and detail/update screen.
+- [x] Refresh reservation create form and detail/update screen.
+- [x] Refresh follow-up create form and detail/update screen.
+- [x] Document workflow form and detail rules in the premium CRM UI rules.
+- [x] Run focused workflow tests and full UI verification.
