@@ -20,6 +20,8 @@
 
 ### Task 1: Consultation-To-Workflow Actions
 
+**Status:** Completed. Implemented and pushed in `fe925a2` and follow-up workflow commits.
+
 **Files:**
 - Modify: `src/server/consultations/service.ts`
 - Modify: `src/app/(app)/consultations/page.tsx`
@@ -30,13 +32,15 @@
 - Consumes: `createConsultation({ organizationId, userId, input })`
 - Produces: consultation list links to `/reservations/new?customerId=<id>` and `/follow-ups/new?customerId=<id>`
 
-- [ ] Add a failing service test proving consultation creation marks the customer `consulting`.
-- [ ] Add an E2E assertion that consultation list exposes reservation/follow-up action links.
-- [ ] Update `createConsultation` transaction to update customer status to `consulting`.
-- [ ] Add action links to the consultation list table.
-- [ ] Run focused tests, then continue.
+- [x] Add a failing service test proving consultation creation marks the customer `consulting`.
+- [x] Add an E2E assertion that consultation list exposes reservation/follow-up action links.
+- [x] Update `createConsultation` transaction to update customer status to `consulting`.
+- [x] Add action links to the consultation list table.
+- [x] Run focused tests, then continue.
 
 ### Task 2: Customer List Filters
+
+**Status:** Completed. Implemented and pushed in `cb63533`.
 
 **Files:**
 - Modify: `src/server/customers/validation.ts`
@@ -48,13 +52,15 @@
 **Interfaces:**
 - Produces: `listCustomers({ organizationId, search, status, tagId, page, pageSize })`
 
-- [ ] Add failing tests for `tagId` tenant-safe filtering.
-- [ ] Extend list validation with `tagId`.
-- [ ] Add Prisma relation filter for customer tags.
-- [ ] Add tag filter control to customer list.
-- [ ] Run focused tests, then continue.
+- [x] Add failing tests for `tagId` tenant-safe filtering.
+- [x] Extend list validation with `tagId`.
+- [x] Add Prisma relation filter for customer tags.
+- [x] Add tag filter control to customer list.
+- [x] Run focused tests, then continue.
 
 ### Task 3: Dashboard Operational Panels
+
+**Status:** Completed. Implemented and pushed in `ca65d49` and `38b238a`.
 
 **Files:**
 - Modify: `src/server/dashboard/service.ts`
@@ -64,12 +70,14 @@
 **Interfaces:**
 - Produces dashboard data for today reservations, due follow-ups, recent activity, unread notifications.
 
-- [ ] Add failing dashboard service tests for the four panels.
-- [ ] Extend dashboard service queries.
-- [ ] Render compact operational panels.
-- [ ] Run focused tests, then continue.
+- [x] Add failing dashboard service tests for the four panels.
+- [x] Extend dashboard service queries.
+- [x] Render compact operational panels.
+- [x] Run focused tests, then continue.
 
 ### Task 4: Notification Coverage
+
+**Status:** Completed. Reservation/follow-up lifecycle notifications and app header unread count are implemented.
 
 **Files:**
 - Modify: `src/server/reservations/service.ts`
@@ -80,20 +88,31 @@
 **Interfaces:**
 - Produces notifications for reservation created/status changed and follow-up status changed.
 
-- [ ] Add failing tests for notification creation on reservation lifecycle events.
-- [ ] Add notification creates in service transactions.
-- [ ] Show unread notification count in app header.
-- [ ] Run focused tests, then continue.
+- [x] Add failing tests for notification creation on reservation lifecycle events.
+- [x] Add notification creates in service transactions.
+- [x] Show unread notification count in app header.
+- [x] Run focused tests, then continue.
 
 ### Task 5: Operations Quality
+
+**Status:** Completed. `pg@9` deprecation warning was traced to relation reads inside transaction updates and fixed in `7381475`.
 
 **Files:**
 - Modify: `src/lib/db.ts` or Prisma adapter setup if pg warning is local-client related.
 - Modify: `prisma/seed.ts` if demo reset is needed.
 - Modify: `README.md` or docs if operational notes are needed.
 
-- [ ] Investigate the `pg@9` deprecation warning with logs and dependency paths.
-- [ ] Add a deterministic E2E data cleanup or isolation note if practical.
-- [ ] Re-run full verification.
-- [ ] Perform UI/UX browser review of key pages.
-- [ ] Commit and push the complete slice set.
+- [x] Investigate the `pg@9` deprecation warning with logs and dependency paths.
+- [x] Add a deterministic E2E data cleanup or isolation note if practical.
+- [x] Re-run full verification.
+- [x] Perform UI/UX browser review of key pages.
+- [x] Commit and push the complete slice set.
+
+## Completion Evidence
+
+- `npm.cmd run lint`: passed.
+- `npm.cmd test`: passed, 31 files and 95 tests.
+- `npx.cmd prisma validate`: passed.
+- `npm.cmd run build`: passed.
+- `npm.cmd run test:e2e`: passed, 15 Playwright tests including desktop and mobile UI smoke checks.
+- `NODE_OPTIONS=--trace-deprecation` follow-up E2E rerun: passed without the previous `pg@9` transaction warning.

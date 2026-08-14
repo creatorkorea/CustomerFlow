@@ -88,3 +88,10 @@ npm run dev
 ```
 
 개발용 시드 계정은 `owner@example.com` / `customerflow-demo-password`이다.
+
+## 운영/검증 노트
+
+- E2E 테스트는 `E2E <timestamp>` 접두어로 생성한 고객, 상담, 예약, 후속관리, 태그, 알림 데이터를 `afterAll`에서 정리한다.
+- 테스트가 중간에 강제 종료되면 Supabase에 테스트 데이터가 남을 수 있으므로 같은 접두어의 데이터를 확인 후 정리한다.
+- Prisma + `@prisma/adapter-pg` transaction 안에서는 relation `include`가 필요한 update를 피한다. update/log는 transaction 안에서 처리하고, relation 포함 응답은 transaction 밖에서 재조회한다.
+- 이 패턴은 `pg@9` 예정 deprecation warning인 중첩 `client.query()` 호출을 피하기 위한 운영 규칙이다.
