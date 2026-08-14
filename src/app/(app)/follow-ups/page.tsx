@@ -1,12 +1,13 @@
 import Link from "next/link";
-import { ClipboardCheck, Plus, Search } from "lucide-react";
+import { ClipboardCheck, Plus } from "lucide-react";
 
+import { CustomerPicker } from "@/components/forms/customer-picker";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Pagination } from "@/components/ui/pagination";
 import { requireOrganizationId } from "@/server/auth/session";
+import { listCustomerPickerOptions } from "@/server/customers/picker-options";
 import { updateFollowUpStatusAction } from "@/server/follow-ups/actions";
 import { listFollowUps } from "@/server/follow-ups/service";
 import { listFollowUpsSchema } from "@/server/follow-ups/validation";
@@ -47,10 +48,16 @@ export default async function FollowUpsPage({ searchParams }: FollowUpsPageProps
     status: firstParam(params.status),
     page: firstParam(params.page)
   });
-  const { followUps, total } = await listFollowUps({
-    organizationId,
-    ...parsed
-  });
+  const [{ followUps, total }, customerOptions] = await Promise.all([
+    listFollowUps({
+      organizationId,
+      ...parsed
+    }),
+    listCustomerPickerOptions({
+      organizationId,
+      defaultCustomerId: parsed.customerId
+    })
+  ]);
 
   const pendingCount = followUps.filter(
     (followUp) => followUp.status === "pending"
@@ -113,20 +120,14 @@ export default async function FollowUpsPage({ searchParams }: FollowUpsPageProps
         </Card>
       </section>
 
-      <form className="flex flex-col gap-3 rounded-lg border border-[var(--border)] bg-white p-4 shadow-[0_1px_2px_rgb(15_23_42/0.04)] sm:flex-row">
-        <label className="relative flex-1">
-          <span className="sr-only">고객 ID 검색</span>
-          <Search
-            aria-hidden="true"
-            className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
+      <form className="flex flex-col gap-3 rounded-lg border border-[var(--border)] bg-white p-4 shadow-[0_1px_2px_rgb(15_23_42/0.04)] lg:flex-row lg:items-start">
+        <div className="min-w-0 flex-1">
+          <CustomerPicker
+            customers={customerOptions}
+            defaultCustomerId={parsed.customerId}
+            required={false}
           />
-          <Input
-            className="pl-9"
-            defaultValue={parsed.customerId}
-            name="customerId"
-            placeholder="고객 ID로 필터"
-          />
-        </label>
+        </div>
         <select className="form-select w-full sm:w-44" defaultValue={parsed.status ?? ""} name="status">
           <option value="">전체 상태</option>
           {Object.entries(statusLabels).map(([value, label]) => (

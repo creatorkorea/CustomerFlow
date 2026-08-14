@@ -43,4 +43,10 @@ describe("CustomerPicker", () => {
       "김철수 / 010-1111-2222"
     );
   });
+
+  it("does not show the required warning when used as an optional filter", () => {
+    render(<CustomerPicker customers={customers} required={false} />);
+
+    expect(screen.queryByText("고객 선택이 필요합니다.")).not.toBeInTheDocument();
+  });
 });

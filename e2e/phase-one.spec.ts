@@ -244,6 +244,9 @@ test("authenticated owner can create a consultation for a customer", async ({ pa
   await page.getByRole("button", { name: "저장" }).click();
 
   await expect(page).toHaveURL(/\/consultations\?customerId=\d+/);
+  await expect(page.getByRole("textbox", { name: "고객 검색" })).toHaveValue(
+    new RegExp(customerName)
+  );
   const consultationsTable = page.locator('[data-desktop-table="consultations"]');
   await expect(consultationsTable.getByText(consultationContent)).toBeVisible();
   await expect(consultationsTable.getByRole("link", { name: "예약 생성" }).first()).toBeVisible();
@@ -284,6 +287,9 @@ test("authenticated owner can create a reservation for a customer", async ({ pag
   await page.getByRole("button", { name: "저장" }).click();
 
   await expect(page).toHaveURL(/\/reservations\?customerId=\d+/);
+  await expect(page.getByRole("textbox", { name: "고객 검색" })).toHaveValue(
+    new RegExp(customerName)
+  );
   const reservationsTable = page.locator('[data-desktop-table="reservations"]');
   await expect(reservationsTable.getByText(reservationTitle)).toBeVisible();
   await reservationsTable.getByRole("button", { name: "완료 처리" }).first().click();
@@ -321,6 +327,9 @@ test("authenticated owner can create a follow-up for a customer", async ({ page 
   await page.getByRole("button", { name: "저장" }).click();
 
   await expect(page).toHaveURL(/\/follow-ups\?customerId=\d+/);
+  await expect(page.getByRole("textbox", { name: "고객 검색" })).toHaveValue(
+    new RegExp(customerName)
+  );
   const followUpsTable = page.locator('[data-desktop-table="follow-ups"]');
   await expect(followUpsTable.getByText(followUpTitle)).toBeVisible();
   await followUpsTable.getByRole("button", { name: "완료 처리" }).first().click();

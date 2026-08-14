@@ -23,8 +23,11 @@ const mobileCardListViews = new Set([
 ]);
 
 const customerPickerViews = new Set([
+  "consultations",
   "consultations-new",
+  "reservations",
   "reservations-new",
+  "follow-ups",
   "follow-ups-new"
 ]);
 

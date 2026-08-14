@@ -15,6 +15,7 @@ export type CustomerPickerCustomer = {
 type CustomerPickerProps = {
   customers: CustomerPickerCustomer[];
   defaultCustomerId?: string;
+  required?: boolean;
 };
 
 function customerLabel(customer: CustomerPickerCustomer) {
@@ -23,7 +24,8 @@ function customerLabel(customer: CustomerPickerCustomer) {
 
 export function CustomerPicker({
   customers,
-  defaultCustomerId
+  defaultCustomerId,
+  required = true
 }: CustomerPickerProps) {
   const defaultCustomer = customers.find(
     (customer) => customer.id === defaultCustomerId
@@ -64,7 +66,6 @@ export function CustomerPicker({
             autoComplete="off"
             className="pl-9 pr-10"
             id="customer-search"
-            name="customerSearch"
             onChange={(event) => {
               setQuery(event.target.value);
               setSelectedCustomer(undefined);
@@ -139,7 +140,7 @@ export function CustomerPicker({
       <p className="text-xs text-slate-500">
         고객명 또는 전화번호 일부로 검색한 뒤 고객을 선택하세요.
       </p>
-      {!selectedCustomer ? (
+      {required && !selectedCustomer ? (
         <p className="text-xs font-medium text-amber-700">고객 선택이 필요합니다.</p>
       ) : null}
     </div>
