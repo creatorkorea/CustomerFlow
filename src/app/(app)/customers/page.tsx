@@ -173,7 +173,57 @@ export default async function CustomersPage({
               </Link>
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <>
+            <div className="space-y-3 p-4 md:hidden" data-mobile-list="customers">
+              {customers.map((customer) => (
+                <Link
+                  className="block rounded-md border border-[var(--border)] bg-white p-4 shadow-sm"
+                  data-mobile-list-item
+                  href={`/customers/${customer.id}`}
+                  key={customer.id}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="font-semibold text-slate-950">
+                        {customer.name}
+                      </div>
+                      <div className="mt-1 text-sm text-slate-600">
+                        {customer.phone ?? "전화번호 없음"}
+                      </div>
+                    </div>
+                    <Badge variant={statusVariants[customer.status]}>
+                      {statusLabels[customer.status]}
+                    </Badge>
+                  </div>
+                  <div className="mt-3 grid gap-2 text-sm text-slate-600">
+                    <div className="flex justify-between gap-3">
+                      <span className="text-slate-500">이메일</span>
+                      <span className="min-w-0 truncate text-right">
+                        {customer.email ?? "-"}
+                      </span>
+                    </div>
+                    <div className="flex justify-between gap-3">
+                      <span className="text-slate-500">최근 상담</span>
+                      <span>
+                        {customer.lastContactedAt
+                          ? new Intl.DateTimeFormat("ko-KR", {
+                              dateStyle: "short",
+                              timeZone: "Asia/Seoul"
+                            }).format(new Date(customer.lastContactedAt))
+                          : "-"}
+                      </span>
+                    </div>
+                    <div className="flex justify-between gap-3">
+                      <span className="text-slate-500">태그</span>
+                      <span className="min-w-0 truncate text-right">
+                        {customer.tags.map((tag) => tag.name).join(", ") || "-"}
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+            <div className="hidden overflow-x-auto md:block" data-desktop-table="customers">
               <table className="w-full min-w-[760px] text-sm">
                 <caption className="sr-only">고객 목록 총 {total}명</caption>
                 <thead className="border-b border-[var(--border)] bg-slate-50 text-left text-xs font-semibold uppercase text-slate-500">
@@ -221,6 +271,7 @@ export default async function CustomersPage({
                 </tbody>
               </table>
             </div>
+            </>
           )}
         </CardContent>
         <Pagination

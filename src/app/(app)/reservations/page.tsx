@@ -163,7 +163,97 @@ export default async function ReservationsPage({
               </Link>
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <>
+            <div
+              className="space-y-3 p-4 md:hidden"
+              data-mobile-list="reservations"
+            >
+              {reservations.map((reservation) => (
+                <article
+                  className="rounded-md border border-[var(--border)] bg-white p-4 shadow-sm"
+                  data-mobile-list-item
+                  key={reservation.id}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="font-semibold text-slate-950">
+                        {reservation.title}
+                      </div>
+                      <Link
+                        className="mt-1 block text-sm font-medium text-slate-600 hover:text-teal-700"
+                        href={`/customers/${reservation.customerId}`}
+                      >
+                        {reservation.customerName}
+                      </Link>
+                    </div>
+                    <Badge variant={statusVariants[reservation.status]}>
+                      {statusLabels[reservation.status]}
+                    </Badge>
+                  </div>
+                  <div className="mt-3 grid gap-2 text-sm text-slate-600">
+                    <div className="flex justify-between gap-3">
+                      <span className="text-slate-500">시작</span>
+                      <span className="text-right">
+                        {formatDateTime(reservation.startAt)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between gap-3">
+                      <span className="text-slate-500">장소</span>
+                      <span className="min-w-0 truncate text-right">
+                        {reservation.location ?? "-"}
+                      </span>
+                    </div>
+                    <div className="flex justify-between gap-3">
+                      <span className="text-slate-500">담당자</span>
+                      <span>{reservation.userName ?? "-"}</span>
+                    </div>
+                  </div>
+                  {["scheduled", "in_progress"].includes(reservation.status) ? (
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {reservation.status === "scheduled" ? (
+                        <form action={updateReservationStatusAction}>
+                          <input
+                            name="reservationId"
+                            type="hidden"
+                            value={reservation.id}
+                          />
+                          <input name="status" type="hidden" value="in_progress" />
+                          <Button size="sm" type="submit" variant="outline">
+                            진행 시작
+                          </Button>
+                        </form>
+                      ) : null}
+                      <form action={updateReservationStatusAction}>
+                        <input
+                          name="reservationId"
+                          type="hidden"
+                          value={reservation.id}
+                        />
+                        <input name="status" type="hidden" value="completed" />
+                        <Button size="sm" type="submit" variant="outline">
+                          완료 처리
+                        </Button>
+                      </form>
+                      <form action={updateReservationStatusAction}>
+                        <input
+                          name="reservationId"
+                          type="hidden"
+                          value={reservation.id}
+                        />
+                        <input name="status" type="hidden" value="cancelled" />
+                        <Button size="sm" type="submit" variant="ghost">
+                          취소
+                        </Button>
+                      </form>
+                    </div>
+                  ) : null}
+                </article>
+              ))}
+            </div>
+            <div
+              className="hidden overflow-x-auto md:block"
+              data-desktop-table="reservations"
+            >
               <table className="w-full min-w-[900px] text-sm">
                 <caption className="sr-only">예약 목록 총 {total}건</caption>
                 <thead className="border-b border-[var(--border)] bg-slate-50 text-left text-xs font-semibold uppercase text-slate-500">
@@ -270,6 +360,7 @@ export default async function ReservationsPage({
                 </tbody>
               </table>
             </div>
+            </>
           )}
         </CardContent>
         <Pagination

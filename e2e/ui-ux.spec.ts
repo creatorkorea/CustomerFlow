@@ -12,6 +12,13 @@ const protectedViews = [
   { path: "/settings/business", heading: "사업장 설정", name: "settings-business" }
 ];
 
+const mobileCardListViews = new Set([
+  "customers",
+  "consultations",
+  "reservations",
+  "follow-ups"
+]);
+
 async function login(page: Page) {
   await page.goto("/login");
   await page.getByLabel("이메일").fill("owner@example.com");
@@ -51,6 +58,13 @@ test("primary app views pass mobile UI smoke checks", async ({ page }) => {
   for (const view of protectedViews) {
     await page.goto(view.path);
     await expect(page.getByRole("heading", { name: view.heading })).toBeVisible();
+    if (mobileCardListViews.has(view.name)) {
+      await expect(page.locator(`[data-mobile-list="${view.name}"]`)).toBeVisible();
+      await expect(
+        page.locator(`[data-mobile-list="${view.name}"] [data-mobile-list-item]`).first()
+      ).toBeVisible();
+      await expect(page.locator(`[data-desktop-table="${view.name}"]`)).toBeHidden();
+    }
     await expectNoBodyOverflow(page);
     await page.screenshot({
       caret: "initial",

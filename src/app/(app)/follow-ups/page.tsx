@@ -157,7 +157,87 @@ export default async function FollowUpsPage({ searchParams }: FollowUpsPageProps
               </Link>
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <>
+            <div
+              className="space-y-3 p-4 md:hidden"
+              data-mobile-list="follow-ups"
+            >
+              {followUps.map((followUp) => (
+                <article
+                  className="rounded-md border border-[var(--border)] bg-white p-4 shadow-sm"
+                  data-mobile-list-item
+                  key={followUp.id}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="font-semibold text-slate-950">
+                        {followUp.title}
+                      </div>
+                      <Link
+                        className="mt-1 block text-sm font-medium text-slate-600 hover:text-teal-700"
+                        href={`/customers/${followUp.customerId}`}
+                      >
+                        {followUp.customerName}
+                      </Link>
+                    </div>
+                    <Badge variant={statusVariants[followUp.status]}>
+                      {statusLabels[followUp.status]}
+                    </Badge>
+                  </div>
+                  <div className="mt-3 grid gap-2 text-sm text-slate-600">
+                    <div className="flex justify-between gap-3">
+                      <span className="text-slate-500">마감</span>
+                      <span className="text-right">{formatDateTime(followUp.dueAt)}</span>
+                    </div>
+                    <div className="flex justify-between gap-3">
+                      <span className="text-slate-500">상담 연결</span>
+                      <span className="min-w-0 truncate text-right">
+                        {followUp.consultationContent ?? "-"}
+                      </span>
+                    </div>
+                    <div className="flex justify-between gap-3">
+                      <span className="text-slate-500">담당자</span>
+                      <span>{followUp.userName ?? "-"}</span>
+                    </div>
+                  </div>
+                  {followUp.memo ? (
+                    <div className="mt-3 rounded-md bg-slate-50 p-3 text-sm text-slate-700">
+                      {followUp.memo}
+                    </div>
+                  ) : null}
+                  {followUp.status === "pending" ? (
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      <form action={updateFollowUpStatusAction}>
+                        <input
+                          name="followUpId"
+                          type="hidden"
+                          value={followUp.id}
+                        />
+                        <input name="status" type="hidden" value="completed" />
+                        <Button size="sm" type="submit" variant="outline">
+                          완료 처리
+                        </Button>
+                      </form>
+                      <form action={updateFollowUpStatusAction}>
+                        <input
+                          name="followUpId"
+                          type="hidden"
+                          value={followUp.id}
+                        />
+                        <input name="status" type="hidden" value="cancelled" />
+                        <Button size="sm" type="submit" variant="ghost">
+                          취소
+                        </Button>
+                      </form>
+                    </div>
+                  ) : null}
+                </article>
+              ))}
+            </div>
+            <div
+              className="hidden overflow-x-auto md:block"
+              data-desktop-table="follow-ups"
+            >
               <table className="w-full min-w-[860px] text-sm">
                 <caption className="sr-only">후속관리 목록 총 {total}건</caption>
                 <thead className="border-b border-[var(--border)] bg-slate-50 text-left text-xs font-semibold uppercase text-slate-500">
@@ -242,6 +322,7 @@ export default async function FollowUpsPage({ searchParams }: FollowUpsPageProps
                 </tbody>
               </table>
             </div>
+            </>
           )}
         </CardContent>
         <Pagination

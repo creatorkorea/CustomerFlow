@@ -171,7 +171,78 @@ export default async function ConsultationsPage({
               </Link>
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <>
+            <div
+              className="space-y-3 p-4 md:hidden"
+              data-mobile-list="consultations"
+            >
+              {consultations.map((consultation) => (
+                <article
+                  className="rounded-md border border-[var(--border)] bg-white p-4 shadow-sm"
+                  data-mobile-list-item
+                  key={consultation.id}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <Link
+                        className="font-semibold text-slate-950 hover:text-teal-700"
+                        href={`/customers/${consultation.customerId}`}
+                      >
+                        {consultation.customerName}
+                      </Link>
+                      <div className="mt-1 text-sm text-slate-600">
+                        {consultation.customerPhone ?? "전화번호 없음"}
+                      </div>
+                    </div>
+                    <Badge variant={statusVariants[consultation.status]}>
+                      {statusLabels[consultation.status]}
+                    </Badge>
+                  </div>
+                  <div className="mt-3 rounded-md bg-slate-50 p-3 text-sm text-slate-700">
+                    {consultation.content}
+                  </div>
+                  <div className="mt-3 grid gap-2 text-sm text-slate-600">
+                    <div className="flex justify-between gap-3">
+                      <span className="text-slate-500">채널</span>
+                      <span>{channelLabels[consultation.channel]}</span>
+                    </div>
+                    <div className="flex justify-between gap-3">
+                      <span className="text-slate-500">다음 액션</span>
+                      <span className="min-w-0 truncate text-right">
+                        {consultation.nextAction ?? "-"}
+                      </span>
+                    </div>
+                    <div className="flex justify-between gap-3">
+                      <span className="text-slate-500">등록일</span>
+                      <span>
+                        {new Intl.DateTimeFormat("ko-KR", {
+                          dateStyle: "short",
+                          timeZone: "Asia/Seoul"
+                        }).format(new Date(consultation.createdAt))}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="mt-4 grid gap-2 sm:grid-cols-2">
+                    <Link
+                      className="inline-flex h-9 items-center justify-center rounded-md border border-[var(--border)] bg-white px-3 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
+                      href={`/reservations/new?customerId=${consultation.customerId}`}
+                    >
+                      예약 생성
+                    </Link>
+                    <Link
+                      className="inline-flex h-9 items-center justify-center rounded-md border border-[var(--border)] bg-white px-3 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
+                      href={`/follow-ups/new?customerId=${consultation.customerId}&consultationId=${consultation.id}`}
+                    >
+                      후속관리 생성
+                    </Link>
+                  </div>
+                </article>
+              ))}
+            </div>
+            <div
+              className="hidden overflow-x-auto md:block"
+              data-desktop-table="consultations"
+            >
               <table className="w-full min-w-[860px] text-sm">
                 <caption className="sr-only">상담 목록 총 {total}건</caption>
                 <thead className="border-b border-[var(--border)] bg-slate-50 text-left text-xs font-semibold uppercase text-slate-500">
@@ -240,6 +311,7 @@ export default async function ConsultationsPage({
                 </tbody>
               </table>
             </div>
+            </>
           )}
         </CardContent>
         <Pagination
