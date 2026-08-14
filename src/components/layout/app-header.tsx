@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Bell, HelpCircle, Search } from "lucide-react";
+import { Bell, Search } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,9 +36,6 @@ export function AppHeader({
           type="search"
         />
       </form>
-      <Button aria-label="도움말" className="hidden sm:inline-flex" size="icon" variant="ghost">
-        <HelpCircle aria-hidden="true" className="h-4 w-4" />
-      </Button>
       <Link
         aria-label="알림"
         className="relative inline-flex h-10 w-10 items-center justify-center rounded-md border border-[var(--border)] bg-white text-sm font-semibold text-slate-800 shadow-sm transition-colors hover:bg-slate-50"

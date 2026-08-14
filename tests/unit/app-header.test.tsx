@@ -22,4 +22,10 @@ describe("AppHeader", () => {
     expect(searchForm).toHaveAttribute("method", "get");
     expect(searchForm).toContainElement(searchInput);
   });
+
+  it("does not render inactive header controls", () => {
+    render(<AppHeader unreadNotificationCount={3} userName="홍길동" />);
+
+    expect(screen.queryByRole("button", { name: "도움말" })).not.toBeInTheDocument();
+  });
 });
