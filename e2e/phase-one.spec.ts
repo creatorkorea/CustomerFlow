@@ -378,8 +378,11 @@ test("authenticated owner can create a reservation for a customer", async ({ pag
 });
 
 test("authenticated owner can create a follow-up for a customer", async ({ page }) => {
+  test.setTimeout(60_000);
+
   const customerName = e2eName("후속");
   const followUpTitle = e2eName("예약 전 확인 연락");
+  const updatedFollowUpTitle = `${followUpTitle} 변경`;
 
   await page.goto("/login");
   await page.getByLabel("이메일").fill("owner@example.com");
@@ -391,7 +394,7 @@ test("authenticated owner can create a follow-up for a customer", async ({ page 
   await page.getByLabel("고객명").fill(customerName);
   await page.getByLabel("전화번호", { exact: true }).fill("010-5555-0000");
   await page.getByRole("button", { name: "저장" }).click();
-  await expect(page).toHaveURL(/\/customers\/\d+/);
+  await expect(page).toHaveURL(/\/customers\/\d+/, { timeout: 15000 });
 
   await page.getByRole("link", { name: "후속관리 등록" }).click();
   await expect(page).toHaveURL(/\/follow-ups\/new\?customerId=\d+/);
@@ -402,19 +405,47 @@ test("authenticated owner can create a follow-up for a customer", async ({ page 
   await page.getByRole("button", { name: "저장" }).click();
 
   await expect(page).toHaveURL(/\/follow-ups\?customerId=\d+/);
+  const customerId = new URL(page.url()).searchParams.get("customerId");
+  if (!customerId) {
+    throw new Error("Expected created follow-up customerId in URL");
+  }
   await expect(page.getByRole("textbox", { name: "고객 검색" })).toHaveValue(
     new RegExp(customerName)
   );
   const followUpsTable = page.locator('[data-desktop-table="follow-ups"]');
   await expect(followUpsTable.getByText(followUpTitle)).toBeVisible();
-  await followUpsTable.getByRole("button", { name: "완료 처리" }).first().click();
+  const followUpDetailHref = await followUpsTable
+    .getByRole("link", { name: "상세 보기" })
+    .first()
+    .getAttribute("href");
+  expect(followUpDetailHref).toMatch(/^\/follow-ups\/\d+$/);
+  await page.goto(followUpDetailHref ?? "/follow-ups", {
+    waitUntil: "domcontentloaded"
+  });
+  await expect(page).toHaveURL(/\/follow-ups\/\d+/);
+  await expect(page.getByRole("heading", { name: "후속관리 상세" })).toBeVisible();
+  await expect(page.getByText(followUpTitle).first()).toBeVisible();
+  await page.getByLabel("할 일").fill(updatedFollowUpTitle);
+  await page.getByLabel("마감").fill("2026-08-16T10:00");
+  await page.getByLabel("상태").selectOption("completed");
+  await page.getByLabel("메모").fill("");
+  await page.getByRole("button", { name: "변경 저장" }).click();
+  await expect(page.getByText(updatedFollowUpTitle).first()).toBeVisible();
+  await expect(page.getByText("완료").first()).toBeVisible();
+
+  await page.goto(`/follow-ups?customerId=${customerId}`);
+  await expect(page.getByRole("heading", { name: "후속관리" })).toBeVisible();
+  const refreshedFollowUpsTable = page.locator('[data-desktop-table="follow-ups"]');
   await expect(
-    page.getByRole("row", { name: new RegExp(`${followUpTitle}.*완료`) })
+    refreshedFollowUpsTable.getByRole("link", { name: "상세 보기" }).first()
+  ).toBeVisible();
+  await expect(
+    page.getByRole("row", { name: new RegExp(`${updatedFollowUpTitle}.*완료`) })
   ).toBeVisible();
 
-  await page.goto(page.url().replace(/\/follow-ups\?customerId=(\d+)/, "/customers/$1"));
+  await page.goto(`/customers/${customerId}`);
   await expect(page.getByRole("heading", { name: customerName })).toBeVisible();
-  await expect(page.getByText(followUpTitle).first()).toBeVisible();
+  await expect(page.getByText(updatedFollowUpTitle).first()).toBeVisible();
 
   await page.goto("/notifications");
   await expect(page.getByRole("heading", { name: "알림" })).toBeVisible();

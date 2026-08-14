@@ -5,9 +5,14 @@ import { redirect } from "next/navigation";
 
 import { requireUser } from "@/server/auth/session";
 import type { FollowUpActionState } from "@/server/follow-ups/action-state";
-import { createFollowUp, updateFollowUpStatus } from "@/server/follow-ups/service";
+import {
+  createFollowUp,
+  updateFollowUp,
+  updateFollowUpStatus
+} from "@/server/follow-ups/service";
 import {
   createFollowUpSchema,
+  updateFollowUpSchema,
   updateFollowUpStatusSchema
 } from "@/server/follow-ups/validation";
 
@@ -73,4 +78,34 @@ export async function updateFollowUpStatusAction(formData: FormData) {
   });
 
   revalidatePath("/follow-ups");
+}
+
+export async function updateFollowUpAction(formData: FormData) {
+  const user = await requireUser();
+  const followUpId = formData.get("followUpId");
+  const payload = formDataToObject(formData);
+  const parsed = updateFollowUpSchema.safeParse({
+    ...payload,
+    dueAt: normalizeKstDateTimeLocal(payload.dueAt)
+  });
+
+  if (
+    !parsed.success ||
+    !user.organizationId ||
+    typeof followUpId !== "string" ||
+    !/^\d+$/.test(followUpId)
+  ) {
+    return;
+  }
+
+  await updateFollowUp({
+    followUpId: BigInt(followUpId),
+    organizationId: BigInt(user.organizationId),
+    userId: BigInt(user.id),
+    input: parsed.data
+  });
+
+  revalidatePath("/follow-ups");
+  revalidatePath(`/follow-ups/${followUpId}`);
+  revalidatePath("/dashboard");
 }

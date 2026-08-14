@@ -172,7 +172,12 @@ export default async function FollowUpsPage({ searchParams }: FollowUpsPageProps
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <div className="font-semibold text-slate-950">
-                        {followUp.title}
+                        <Link
+                          className="hover:text-teal-700"
+                          href={`/follow-ups/${followUp.id}`}
+                        >
+                          {followUp.title}
+                        </Link>
                       </div>
                       <Link
                         className="mt-1 block text-sm font-medium text-slate-600 hover:text-teal-700"
@@ -208,6 +213,12 @@ export default async function FollowUpsPage({ searchParams }: FollowUpsPageProps
                   ) : null}
                   {followUp.status === "pending" ? (
                     <div className="mt-4 flex flex-wrap gap-2">
+                      <Link
+                        className="inline-flex h-9 items-center justify-center rounded-md border border-[var(--border)] bg-white px-3 text-sm font-semibold text-slate-800 shadow-sm hover:bg-slate-50"
+                        href={`/follow-ups/${followUp.id}`}
+                      >
+                        상세 보기
+                      </Link>
                       <form action={updateFollowUpStatusAction}>
                         <input
                           name="followUpId"
@@ -231,7 +242,16 @@ export default async function FollowUpsPage({ searchParams }: FollowUpsPageProps
                         </Button>
                       </form>
                     </div>
-                  ) : null}
+                  ) : (
+                    <div className="mt-4">
+                      <Link
+                        className="inline-flex h-9 items-center justify-center rounded-md border border-[var(--border)] bg-white px-3 text-sm font-semibold text-slate-800 shadow-sm hover:bg-slate-50"
+                        href={`/follow-ups/${followUp.id}`}
+                      >
+                        상세 보기
+                      </Link>
+                    </div>
+                  )}
                 </article>
               ))}
             </div>
@@ -257,7 +277,12 @@ export default async function FollowUpsPage({ searchParams }: FollowUpsPageProps
                     <tr className="transition-colors hover:bg-teal-50/40" key={followUp.id}>
                       <td className="px-4 py-3">
                         <div className="font-medium text-slate-950">
-                          {followUp.title}
+                          <Link
+                            className="hover:text-teal-700"
+                            href={`/follow-ups/${followUp.id}`}
+                          >
+                            {followUp.title}
+                          </Link>
                         </div>
                         <div className="mt-1 max-w-xs truncate text-xs text-slate-500">
                           {followUp.memo ?? "-"}
@@ -291,6 +316,12 @@ export default async function FollowUpsPage({ searchParams }: FollowUpsPageProps
                       <td className="px-4 py-3">
                         {followUp.status === "pending" ? (
                           <div className="flex gap-2">
+                            <Link
+                              className="inline-flex h-8 items-center justify-center rounded-md border border-[var(--border)] bg-white px-3 text-xs font-semibold text-slate-800 shadow-sm hover:bg-slate-50"
+                              href={`/follow-ups/${followUp.id}`}
+                            >
+                              상세 보기
+                            </Link>
                             <form action={updateFollowUpStatusAction}>
                               <input
                                 name="followUpId"
@@ -315,7 +346,12 @@ export default async function FollowUpsPage({ searchParams }: FollowUpsPageProps
                             </form>
                           </div>
                         ) : (
-                          <span className="text-xs text-slate-500">처리됨</span>
+                          <Link
+                            className="inline-flex h-8 items-center justify-center rounded-md border border-[var(--border)] bg-white px-3 text-xs font-semibold text-slate-800 shadow-sm hover:bg-slate-50"
+                            href={`/follow-ups/${followUp.id}`}
+                          >
+                            상세 보기
+                          </Link>
                         )}
                       </td>
                     </tr>

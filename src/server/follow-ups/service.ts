@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import type {
   CreateFollowUpInput,
   ListFollowUpsInput,
+  UpdateFollowUpInput,
   UpdateFollowUpStatusInput
 } from "@/server/follow-ups/validation";
 import { AppError } from "@/server/shared/http-errors";
@@ -178,6 +179,53 @@ export async function listFollowUps({
     page,
     pageSize
   };
+}
+
+function followUpInclude() {
+  return {
+    customer: {
+      select: {
+        id: true,
+        name: true,
+        phone: true
+      }
+    },
+    consultation: {
+      select: {
+        id: true,
+        content: true
+      }
+    },
+    user: {
+      select: {
+        id: true,
+        name: true
+      }
+    }
+  } satisfies Prisma.FollowUpInclude;
+}
+
+export async function getFollowUp({
+  followUpId,
+  organizationId
+}: {
+  followUpId: bigint;
+  organizationId: bigint;
+}) {
+  const followUp = await prisma.followUp.findFirst({
+    where: {
+      id: followUpId,
+      organizationId,
+      deletedAt: null
+    },
+    include: followUpInclude()
+  });
+
+  if (!followUp) {
+    throw new AppError("NOT_FOUND", "후속관리를 찾을 수 없습니다.", 404);
+  }
+
+  return serializeFollowUp(followUp as FollowUpWithRelations);
 }
 
 export async function createFollowUp({
@@ -387,4 +435,70 @@ export async function updateFollowUpStatus({
   }
 
   return serializeFollowUp(followUpWithRelations as FollowUpWithRelations);
+}
+
+export async function updateFollowUp({
+  followUpId,
+  organizationId,
+  userId,
+  input
+}: {
+  followUpId: bigint;
+  organizationId: bigint;
+  userId?: bigint;
+  input: UpdateFollowUpInput;
+}) {
+  const existing = await prisma.followUp.findFirst({
+    where: {
+      id: followUpId,
+      organizationId,
+      deletedAt: null
+    },
+    select: {
+      id: true,
+      customerId: true
+    }
+  });
+
+  if (!existing) {
+    throw new AppError("NOT_FOUND", "후속관리를 찾을 수 없습니다.", 404);
+  }
+
+  const completedAt = input.status === "completed" ? new Date() : null;
+
+  const followUp = await prisma.$transaction(async (tx) => {
+    const updated = await tx.followUp.update({
+      where: {
+        id: followUpId
+      },
+      data: {
+        title: input.title,
+        memo: input.memo ?? null,
+        dueAt: new Date(input.dueAt),
+        status: input.status,
+        completedAt,
+        userId
+      },
+      include: followUpInclude()
+    });
+
+    await tx.activityLog.create({
+      data: {
+        organizationId,
+        userId,
+        entityType: "FOLLOW_UP",
+        entityId: followUpId,
+        action: "FOLLOW_UP_UPDATED",
+        metadata: {
+          customerId: existing.customerId.toString(),
+          status: input.status,
+          source: "follow-up-service"
+        }
+      }
+    });
+
+    return updated;
+  });
+
+  return serializeFollowUp(followUp as FollowUpWithRelations);
 }
