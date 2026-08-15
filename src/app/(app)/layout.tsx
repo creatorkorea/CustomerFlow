@@ -1,19 +1,35 @@
 import { AppShell } from "@/components/layout/app-shell";
-import { requirePageUser } from "@/server/auth/session";
+import { requirePageTenantUser } from "@/server/auth/session";
 import { getUnreadNotificationCount } from "@/server/notifications/service";
+
+async function getSafeUnreadNotificationCount({
+  organizationId,
+  userId
+}: {
+  organizationId: bigint;
+  userId: bigint;
+}) {
+  try {
+    return await getUnreadNotificationCount({
+      organizationId,
+      userId
+    });
+  } catch (error) {
+    console.error("Failed to load unread notification count", error);
+    return 0;
+  }
+}
 
 export default async function ProtectedLayout({
   children
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const user = await requirePageUser();
-  const unreadNotificationCount = user.organizationId
-    ? await getUnreadNotificationCount({
-        organizationId: BigInt(user.organizationId),
-        userId: BigInt(user.id)
-      })
-    : 0;
+  const user = await requirePageTenantUser();
+  const unreadNotificationCount = await getSafeUnreadNotificationCount({
+    organizationId: user.organizationId,
+    userId: user.id
+  });
 
   return (
     <AppShell

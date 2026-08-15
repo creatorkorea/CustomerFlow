@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import {
   CalendarDays,
   ClipboardList,
@@ -12,7 +11,7 @@ import {
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { requirePageUser } from "@/server/auth/session";
+import { requirePageTenantUser } from "@/server/auth/session";
 import { getDashboardOverview } from "@/server/dashboard/service";
 import { markNotificationReadAction } from "@/server/notifications/actions";
 import { DashboardActivityItem } from "./dashboard-activity-item";
@@ -35,14 +34,10 @@ function formatDateTime(value: string) {
 }
 
 export default async function DashboardPage() {
-  const user = await requirePageUser();
-
-  if (!user.organizationId) {
-    redirect("/login");
-  }
+  const user = await requirePageTenantUser();
 
   const overview = await getDashboardOverview({
-    organizationId: BigInt(user.organizationId)
+    organizationId: user.organizationId
   });
   const stats = [
     {

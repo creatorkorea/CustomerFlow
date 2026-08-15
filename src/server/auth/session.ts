@@ -3,6 +3,14 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { AppError } from "@/server/shared/http-errors";
 
+function parseSessionBigInt(value: unknown) {
+  if (typeof value !== "string" || !/^\d+$/.test(value)) {
+    return null;
+  }
+
+  return BigInt(value);
+}
+
 export async function getCurrentUser() {
   const session = await auth();
 
@@ -41,10 +49,27 @@ export async function requirePageUser() {
 
 export async function requirePageOrganizationId() {
   const user = await requirePageUser();
+  const organizationId = parseSessionBigInt(user.organizationId);
 
-  if (!user.organizationId) {
+  if (!organizationId) {
     redirect("/login");
   }
 
-  return BigInt(user.organizationId);
+  return organizationId;
+}
+
+export async function requirePageTenantUser() {
+  const user = await requirePageUser();
+  const id = parseSessionBigInt(user.id);
+  const organizationId = parseSessionBigInt(user.organizationId);
+
+  if (!id || !organizationId) {
+    redirect("/login");
+  }
+
+  return {
+    ...user,
+    id,
+    organizationId
+  };
 }
