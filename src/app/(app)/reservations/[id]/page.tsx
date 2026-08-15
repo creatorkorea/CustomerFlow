@@ -5,7 +5,7 @@ import { ArrowLeft, Save } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { requireOrganizationId } from "@/server/auth/session";
+import { requirePageOrganizationId } from "@/server/auth/session";
 import { updateReservationAction } from "@/server/reservations/actions";
 import { getReservation } from "@/server/reservations/service";
 import { AppError } from "@/server/shared/http-errors";
@@ -66,7 +66,7 @@ export default async function ReservationDetailPage({
     notFound();
   }
 
-  const organizationId = await requireOrganizationId();
+  const organizationId = await requirePageOrganizationId();
   let reservation: Awaited<ReturnType<typeof getReservation>>;
 
   try {
@@ -84,17 +84,17 @@ export default async function ReservationDetailPage({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <div className="flex flex-col gap-4 rounded-lg border border-[var(--border)] bg-white p-5 shadow-sm sm:flex-row sm:items-end sm:justify-between">
         <div>
           <Link
-            className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-teal-700"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-[var(--primary)]"
             href="/reservations"
           >
             <ArrowLeft aria-hidden="true" className="h-4 w-4" />
             예약 목록
           </Link>
-          <Badge className="mt-4">Reservation</Badge>
-          <h1 className="mt-3 text-2xl font-semibold tracking-tight text-slate-950">
+          <Badge className="mt-4">예약 업무</Badge>
+          <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950">
             예약 상세
           </h1>
           <p className="mt-2 text-sm text-slate-600">
@@ -102,7 +102,7 @@ export default async function ReservationDetailPage({
           </p>
         </div>
         <Link
-          className="inline-flex h-10 items-center justify-center rounded-md border border-[var(--border)] bg-white px-4 text-sm font-semibold text-slate-800 shadow-sm hover:bg-slate-50"
+          className="inline-flex h-10 items-center justify-center rounded-md border border-[var(--border)] bg-white px-4 text-sm font-semibold text-slate-800 shadow-sm transition-colors hover:bg-[var(--surface-subtle)]"
           href={`/customers/${reservation.customerId}`}
         >
           고객 상세
@@ -110,13 +110,13 @@ export default async function ReservationDetailPage({
       </div>
 
       <section className="grid gap-4 lg:grid-cols-[1fr_380px]">
-        <Card className="min-w-0">
-          <CardHeader>
+        <Card className="min-w-0 overflow-hidden">
+          <CardHeader className="border-b border-[var(--border)]">
             <CardTitle>예약 기록</CardTitle>
           </CardHeader>
           <CardContent className="space-y-5">
             <div className="grid gap-4 sm:grid-cols-3">
-              <div className="rounded-md bg-slate-50 p-4">
+              <div className="rounded-md border border-[var(--border)] bg-[var(--surface-subtle)] p-4">
                 <div className="text-xs font-semibold text-slate-500">고객</div>
                 <div className="mt-1 truncate font-semibold text-slate-950">
                   {reservation.customerName}
@@ -125,7 +125,7 @@ export default async function ReservationDetailPage({
                   {reservation.customerPhone ?? "전화번호 없음"}
                 </div>
               </div>
-              <div className="rounded-md bg-slate-50 p-4">
+              <div className="rounded-md border border-[var(--border)] bg-[var(--surface-subtle)] p-4">
                 <div className="text-xs font-semibold text-slate-500">상태</div>
                 <div className="mt-2">
                   <Badge variant={statusVariants[reservation.status]}>
@@ -133,7 +133,7 @@ export default async function ReservationDetailPage({
                   </Badge>
                 </div>
               </div>
-              <div className="rounded-md bg-slate-50 p-4">
+              <div className="rounded-md border border-[var(--border)] bg-[var(--surface-subtle)] p-4">
                 <div className="text-xs font-semibold text-slate-500">담당자</div>
                 <div className="mt-1 font-semibold text-slate-950">
                   {reservation.userName ?? "미배정"}
@@ -171,9 +171,12 @@ export default async function ReservationDetailPage({
           </CardContent>
         </Card>
 
-        <Card className="min-w-0">
-          <CardHeader>
+        <Card className="min-w-0 overflow-hidden">
+          <CardHeader className="border-b border-[var(--border)]">
             <CardTitle>예약 업데이트</CardTitle>
+            <p className="mt-2 text-sm text-slate-600">
+              일정, 장소, 상태를 현장 운영 기준으로 조정합니다.
+            </p>
           </CardHeader>
           <CardContent>
             <form action={updateReservationAction} className="space-y-4">
@@ -181,7 +184,7 @@ export default async function ReservationDetailPage({
               <label className="space-y-2">
                 <span className="text-sm font-semibold text-slate-700">예약명</span>
                 <input
-                  className="flex h-10 w-full rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm text-slate-950 outline-none transition-colors placeholder:text-[var(--muted-foreground)] focus-visible:border-[var(--ring)] focus-visible:ring-4 focus-visible:ring-teal-500/10"
+                  className="form-input w-full"
                   defaultValue={reservation.title}
                   name="title"
                   required
@@ -191,7 +194,7 @@ export default async function ReservationDetailPage({
                 <label className="space-y-2">
                   <span className="text-sm font-semibold text-slate-700">시작</span>
                   <input
-                    className="flex h-10 w-full rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm text-slate-950 outline-none transition-colors focus-visible:border-[var(--ring)] focus-visible:ring-4 focus-visible:ring-teal-500/10"
+                    className="form-input w-full"
                     defaultValue={toDateTimeLocal(reservation.startAt)}
                     name="startAt"
                     required
@@ -201,7 +204,7 @@ export default async function ReservationDetailPage({
                 <label className="space-y-2">
                   <span className="text-sm font-semibold text-slate-700">종료</span>
                   <input
-                    className="flex h-10 w-full rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm text-slate-950 outline-none transition-colors focus-visible:border-[var(--ring)] focus-visible:ring-4 focus-visible:ring-teal-500/10"
+                    className="form-input w-full"
                     defaultValue={toDateTimeLocal(reservation.endAt)}
                     name="endAt"
                     required
@@ -226,7 +229,7 @@ export default async function ReservationDetailPage({
               <label className="space-y-2">
                 <span className="text-sm font-semibold text-slate-700">장소</span>
                 <input
-                  className="flex h-10 w-full rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm text-slate-950 outline-none transition-colors placeholder:text-[var(--muted-foreground)] focus-visible:border-[var(--ring)] focus-visible:ring-4 focus-visible:ring-teal-500/10"
+                  className="form-input w-full"
                   defaultValue={reservation.location ?? ""}
                   name="location"
                   placeholder="서울 강남구"
@@ -241,10 +244,12 @@ export default async function ReservationDetailPage({
                   placeholder="방문 전 확인할 내용"
                 />
               </label>
-              <Button className="w-full" type="submit">
-                <Save aria-hidden="true" className="h-4 w-4" />
-                변경 저장
-              </Button>
+              <div className="border-t border-[var(--border)] pt-5">
+                <Button className="w-full" type="submit">
+                  <Save aria-hidden="true" className="h-4 w-4" />
+                  변경 저장
+                </Button>
+              </div>
             </form>
           </CardContent>
         </Card>

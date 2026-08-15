@@ -5,7 +5,7 @@ import { ArrowLeft, Save } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { requireOrganizationId } from "@/server/auth/session";
+import { requirePageOrganizationId } from "@/server/auth/session";
 import { updateFollowUpAction } from "@/server/follow-ups/actions";
 import { getFollowUp } from "@/server/follow-ups/service";
 import { AppError } from "@/server/shared/http-errors";
@@ -62,7 +62,7 @@ export default async function FollowUpDetailPage({
     notFound();
   }
 
-  const organizationId = await requireOrganizationId();
+  const organizationId = await requirePageOrganizationId();
   let followUp: Awaited<ReturnType<typeof getFollowUp>>;
 
   try {
@@ -80,17 +80,17 @@ export default async function FollowUpDetailPage({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <div className="flex flex-col gap-4 rounded-lg border border-[var(--border)] bg-white p-5 shadow-sm sm:flex-row sm:items-end sm:justify-between">
         <div>
           <Link
-            className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-teal-700"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-[var(--primary)]"
             href="/follow-ups"
           >
             <ArrowLeft aria-hidden="true" className="h-4 w-4" />
             후속관리 목록
           </Link>
-          <Badge className="mt-4">Follow-up</Badge>
-          <h1 className="mt-3 text-2xl font-semibold tracking-tight text-slate-950">
+          <Badge className="mt-4">후속관리 업무</Badge>
+          <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950">
             후속관리 상세
           </h1>
           <p className="mt-2 text-sm text-slate-600">
@@ -98,7 +98,7 @@ export default async function FollowUpDetailPage({
           </p>
         </div>
         <Link
-          className="inline-flex h-10 items-center justify-center rounded-md border border-[var(--border)] bg-white px-4 text-sm font-semibold text-slate-800 shadow-sm hover:bg-slate-50"
+          className="inline-flex h-10 items-center justify-center rounded-md border border-[var(--border)] bg-white px-4 text-sm font-semibold text-slate-800 shadow-sm transition-colors hover:bg-[var(--surface-subtle)]"
           href={`/customers/${followUp.customerId}`}
         >
           고객 상세
@@ -106,13 +106,13 @@ export default async function FollowUpDetailPage({
       </div>
 
       <section className="grid gap-4 lg:grid-cols-[1fr_380px]">
-        <Card className="min-w-0">
-          <CardHeader>
+        <Card className="min-w-0 overflow-hidden">
+          <CardHeader className="border-b border-[var(--border)]">
             <CardTitle>후속관리 기록</CardTitle>
           </CardHeader>
           <CardContent className="space-y-5">
             <div className="grid gap-4 sm:grid-cols-3">
-              <div className="rounded-md bg-slate-50 p-4">
+              <div className="rounded-md border border-[var(--border)] bg-[var(--surface-subtle)] p-4">
                 <div className="text-xs font-semibold text-slate-500">고객</div>
                 <div className="mt-1 truncate font-semibold text-slate-950">
                   {followUp.customerName}
@@ -121,7 +121,7 @@ export default async function FollowUpDetailPage({
                   {followUp.customerPhone ?? "전화번호 없음"}
                 </div>
               </div>
-              <div className="rounded-md bg-slate-50 p-4">
+              <div className="rounded-md border border-[var(--border)] bg-[var(--surface-subtle)] p-4">
                 <div className="text-xs font-semibold text-slate-500">상태</div>
                 <div className="mt-2">
                   <Badge variant={statusVariants[followUp.status]}>
@@ -129,7 +129,7 @@ export default async function FollowUpDetailPage({
                   </Badge>
                 </div>
               </div>
-              <div className="rounded-md bg-slate-50 p-4">
+              <div className="rounded-md border border-[var(--border)] bg-[var(--surface-subtle)] p-4">
                 <div className="text-xs font-semibold text-slate-500">담당자</div>
                 <div className="mt-1 font-semibold text-slate-950">
                   {followUp.userName ?? "미배정"}
@@ -171,9 +171,12 @@ export default async function FollowUpDetailPage({
           </CardContent>
         </Card>
 
-        <Card className="min-w-0">
-          <CardHeader>
+        <Card className="min-w-0 overflow-hidden">
+          <CardHeader className="border-b border-[var(--border)]">
             <CardTitle>후속관리 업데이트</CardTitle>
+            <p className="mt-2 text-sm text-slate-600">
+              마감 시간과 처리 상태를 놓치지 않게 정리합니다.
+            </p>
           </CardHeader>
           <CardContent>
             <form action={updateFollowUpAction} className="space-y-4">
@@ -181,7 +184,7 @@ export default async function FollowUpDetailPage({
               <label className="space-y-2">
                 <span className="text-sm font-semibold text-slate-700">할 일</span>
                 <input
-                  className="flex h-10 w-full rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm text-slate-950 outline-none transition-colors placeholder:text-[var(--muted-foreground)] focus-visible:border-[var(--ring)] focus-visible:ring-4 focus-visible:ring-teal-500/10"
+                  className="form-input w-full"
                   defaultValue={followUp.title}
                   name="title"
                   required
@@ -190,7 +193,7 @@ export default async function FollowUpDetailPage({
               <label className="space-y-2">
                 <span className="text-sm font-semibold text-slate-700">마감</span>
                 <input
-                  className="flex h-10 w-full rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm text-slate-950 outline-none transition-colors focus-visible:border-[var(--ring)] focus-visible:ring-4 focus-visible:ring-teal-500/10"
+                  className="form-input w-full"
                   defaultValue={toDateTimeLocal(followUp.dueAt)}
                   name="dueAt"
                   required
@@ -220,10 +223,12 @@ export default async function FollowUpDetailPage({
                   placeholder="다음 확인 사항"
                 />
               </label>
-              <Button className="w-full" type="submit">
-                <Save aria-hidden="true" className="h-4 w-4" />
-                변경 저장
-              </Button>
+              <div className="border-t border-[var(--border)] pt-5">
+                <Button className="w-full" type="submit">
+                  <Save aria-hidden="true" className="h-4 w-4" />
+                  변경 저장
+                </Button>
+              </div>
             </form>
           </CardContent>
         </Card>

@@ -2,19 +2,15 @@ import { Building2 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { requirePageUser } from "@/server/auth/session";
+import { requirePageTenantUser } from "@/server/auth/session";
 import { getBusinessSettings } from "@/server/settings/business-service";
 import { BusinessSettingsForm } from "./business-settings-form";
 
 export default async function BusinessSettingsPage() {
-  const user = await requirePageUser();
-
-  if (!user.organizationId) {
-    throw new Error("사업장 권한을 확인할 수 없습니다.");
-  }
+  const user = await requirePageTenantUser();
 
   const settings = await getBusinessSettings({
-    organizationId: BigInt(user.organizationId)
+    organizationId: user.organizationId
   });
   const canManage = user.role === "owner" || user.role === "admin";
 

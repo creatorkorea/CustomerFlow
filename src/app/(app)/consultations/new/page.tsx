@@ -3,7 +3,7 @@ import { ArrowLeft } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { requireOrganizationId } from "@/server/auth/session";
+import { requirePageOrganizationId } from "@/server/auth/session";
 import { listCustomerPickerOptions } from "@/server/customers/picker-options";
 import { ConsultationForm } from "./consultation-form";
 
@@ -18,7 +18,7 @@ function firstParam(value: string | string[] | undefined) {
 export default async function NewConsultationPage({
   searchParams
 }: NewConsultationPageProps) {
-  const organizationId = await requireOrganizationId();
+  const organizationId = await requirePageOrganizationId();
   const params = await searchParams;
   const defaultCustomerId = firstParam(params.customerId);
   const customers = await listCustomerPickerOptions({
@@ -28,24 +28,24 @@ export default async function NewConsultationPage({
 
   return (
     <div className="max-w-3xl space-y-6">
-      <div>
+      <div className="rounded-lg border border-[var(--border)] bg-white p-5 shadow-sm">
         <Link
-          className="inline-flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-slate-950"
+          className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-[var(--primary)]"
           href="/consultations"
         >
           <ArrowLeft aria-hidden="true" className="h-4 w-4" />
           상담 목록
         </Link>
-        <Badge className="mt-5">Consultations</Badge>
-        <h1 className="mt-3 text-2xl font-semibold tracking-tight text-slate-950">
+        <Badge className="mt-5">상담 업무</Badge>
+        <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950">
           상담 등록
         </h1>
         <p className="mt-2 text-sm text-slate-600">
           고객 문의를 기록하고 예약 또는 후속관리로 이어갈 다음 액션을 남깁니다.
         </p>
       </div>
-      <Card>
-        <CardHeader>
+      <Card className="overflow-hidden">
+        <CardHeader className="border-b border-[var(--border)]">
           <CardTitle>상담 정보</CardTitle>
           <p className="mt-2 text-sm text-slate-600">
             같은 사업장에 등록된 고객만 상담과 연결할 수 있습니다.

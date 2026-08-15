@@ -4,7 +4,7 @@ import { expect, test, type Page } from "@playwright/test";
 
 const protectedViews = [
   { path: "/dashboard", heading: "오늘 해야 할 일", name: "dashboard" },
-  { path: "/customers", heading: "고객", name: "customers" },
+  { path: "/customers", heading: "고객 목록", name: "customers" },
   { path: "/consultations", heading: "상담", name: "consultations" },
   { path: "/consultations/new", heading: "상담 등록", name: "consultations-new" },
   { path: "/reservations", heading: "예약", name: "reservations" },
@@ -53,7 +53,9 @@ test("primary app views pass desktop UI smoke checks", async ({ page }) => {
 
   for (const view of protectedViews) {
     await page.goto(view.path);
-    await expect(page.getByRole("heading", { name: view.heading })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: view.heading, exact: true })
+    ).toBeVisible();
     if (view.name === "dashboard") {
       await expect(page.getByRole("heading", { name: "최근 상담" })).toBeVisible();
       await expect(
@@ -78,7 +80,9 @@ test("primary app views pass mobile UI smoke checks", async ({ page }) => {
 
   for (const view of protectedViews) {
     await page.goto(view.path);
-    await expect(page.getByRole("heading", { name: view.heading })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: view.heading, exact: true })
+    ).toBeVisible();
     if (view.name === "dashboard") {
       await expect(page.getByRole("heading", { name: "최근 상담" })).toBeVisible();
       await expect(

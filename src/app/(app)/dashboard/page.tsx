@@ -1,17 +1,17 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import {
   CalendarDays,
   ClipboardList,
   MessageSquareText,
   Bell,
   Plus,
-  Users
+  Users,
+  ArrowRight
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { requirePageUser } from "@/server/auth/session";
+import { requirePageTenantUser } from "@/server/auth/session";
 import { getDashboardOverview } from "@/server/dashboard/service";
 import { markNotificationReadAction } from "@/server/notifications/actions";
 import { DashboardActivityItem } from "./dashboard-activity-item";
@@ -34,96 +34,119 @@ function formatDateTime(value: string) {
 }
 
 export default async function DashboardPage() {
-  const user = await requirePageUser();
-
-  if (!user.organizationId) {
-    redirect("/login");
-  }
+  const user = await requirePageTenantUser();
 
   const overview = await getDashboardOverview({
-    organizationId: BigInt(user.organizationId)
+    organizationId: user.organizationId
   });
   const stats = [
     {
       label: "오늘 예약",
       value: overview.metrics.todayReservations.toString(),
+      helper: "시간 확인",
       icon: CalendarDays
     },
     {
       label: "신규 고객",
       value: overview.metrics.newCustomers.toString(),
+      helper: "이번 달",
       icon: Users
     },
     {
       label: "후속 연락",
       value: overview.metrics.pendingFollowUps.toString(),
+      helper: "처리 필요",
       icon: ClipboardList
     },
     {
       label: "미완료 상담",
       value: overview.metrics.openConsultations.toString(),
+      helper: "전환 대기",
       icon: MessageSquareText
     },
     {
       label: "미확인 알림",
       value: overview.metrics.unreadNotifications.toString(),
+      helper: "읽음 필요",
       icon: Bell
     }
   ];
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <div className="rounded-lg border border-[var(--border)] bg-white px-5 py-5 shadow-[0_1px_2px_rgb(15_23_42/0.035)]">
+        <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
         <div>
-          <Badge>Phase 1</Badge>
-          <h1 className="mt-3 text-2xl font-semibold tracking-tight text-slate-950">
+          <Badge>오늘의 운영</Badge>
+          <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950">
             오늘 해야 할 일
           </h1>
           <p className="mt-2 text-sm text-slate-600">
-            고객, 상담, 예약, 후속관리 흐름을 이 대시보드에서 시작합니다.
+            고객 문의부터 상담, 예약, 후속 연락까지 오늘의 흐름을 한눈에 확인하세요.
           </p>
         </div>
-        <div className="flex flex-col gap-2 sm:flex-row">
+        <div className="grid gap-2 sm:grid-cols-3 xl:w-auto">
           <Link
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[var(--border)] bg-white px-4 text-sm font-semibold text-slate-800 shadow-sm hover:bg-slate-50"
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-[var(--primary)] px-4 text-sm font-semibold text-white shadow-[0_1px_2px_rgb(15_23_42/0.08)] hover:bg-[var(--primary-hover)]"
             href="/customers/new"
           >
             <Plus aria-hidden="true" className="h-4 w-4" />
             고객 추가
           </Link>
           <Link
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-[var(--primary)] px-4 text-sm font-semibold text-white shadow-sm hover:bg-teal-700"
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[var(--border-strong)] bg-white px-4 text-sm font-semibold text-slate-800 shadow-[0_1px_2px_rgb(15_23_42/0.04)] hover:border-[var(--primary)] hover:bg-[var(--primary-soft)] hover:text-[var(--primary)]"
             href="/consultations/new"
           >
             <Plus aria-hidden="true" className="h-4 w-4" />
             상담 등록
           </Link>
+          <Link
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-[var(--border-strong)] bg-white px-4 text-sm font-semibold text-slate-800 shadow-[0_1px_2px_rgb(15_23_42/0.04)] hover:border-[var(--primary)] hover:bg-[var(--primary-soft)] hover:text-[var(--primary)]"
+            href="/reservations/new"
+          >
+            <Plus aria-hidden="true" className="h-4 w-4" />
+            예약 등록
+          </Link>
+        </div>
         </div>
       </div>
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+      <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
         {stats.map((stat) => {
           const Icon = stat.icon;
 
           return (
-            <Card className="min-w-0" key={stat.label}>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0">
+            <Card className="min-w-0 overflow-hidden" key={stat.label}>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle>{stat.label}</CardTitle>
-                <div className="flex h-9 w-9 items-center justify-center rounded-md bg-teal-50 text-teal-700">
+                <div className="flex h-9 w-9 items-center justify-center rounded-md bg-[var(--primary-soft)] text-[var(--primary)]">
                   <Icon aria-hidden="true" className="h-5 w-5" />
                 </div>
               </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold text-slate-950">{stat.value}</div>
-                <div className="mt-1 text-xs text-slate-500">오늘 기준</div>
+              <CardContent className="pt-1">
+                <div className="text-3xl font-semibold tracking-tight text-slate-950">
+                  {stat.value}
+                </div>
+                <div className="mt-1 text-xs font-medium text-slate-500">
+                  {stat.helper}
+                </div>
               </CardContent>
             </Card>
           );
         })}
       </section>
-      <section className="grid gap-4 xl:grid-cols-2">
+      <section className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
         <Card className="min-w-0">
-          <CardHeader>
-            <CardTitle>오늘의 일정</CardTitle>
+          <CardHeader className="border-b border-[var(--border)]">
+            <div className="flex items-center justify-between gap-3">
+              <CardTitle>오늘의 일정</CardTitle>
+              <Link
+                className="inline-flex items-center gap-1 text-xs font-semibold text-[var(--primary)] hover:text-[var(--primary-hover)]"
+                href="/reservations"
+              >
+                전체 보기
+                <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />
+              </Link>
+            </div>
           </CardHeader>
           <CardContent>
             {overview.todayReservations.length === 0 ? (
@@ -134,7 +157,7 @@ export default async function DashboardPage() {
               <div className="divide-y divide-[var(--border)]">
                 {overview.todayReservations.map((reservation) => (
                   <Link
-                    className="flex items-center justify-between gap-4 py-3 hover:text-teal-700"
+                    className="flex items-center justify-between gap-4 py-3 hover:text-[var(--primary)]"
                     href={`/customers/${reservation.customerId}`}
                     key={reservation.id}
                   >
@@ -149,7 +172,7 @@ export default async function DashboardPage() {
                           : ""}
                       </div>
                     </div>
-                    <div className="shrink-0 text-sm font-semibold text-teal-700">
+                    <div className="shrink-0 text-sm font-semibold text-[var(--primary)]">
                       {formatTime(reservation.startAt)}
                     </div>
                   </Link>
@@ -158,8 +181,46 @@ export default async function DashboardPage() {
             )}
           </CardContent>
         </Card>
+        <Card className="min-w-0 xl:row-span-2">
+          <CardHeader className="border-b border-[var(--border)]">
+            <div className="flex items-center justify-between gap-3">
+              <CardTitle>후속 연락 필요</CardTitle>
+              <Link
+                className="inline-flex items-center gap-1 text-xs font-semibold text-[var(--primary)] hover:text-[var(--primary-hover)]"
+                href="/follow-ups"
+              >
+                전체 보기
+                <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />
+              </Link>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {overview.pendingFollowUps.length === 0 ? (
+              <p className="rounded-md border border-dashed border-[var(--border)] bg-[var(--surface-subtle)] px-4 py-8 text-center text-sm text-slate-600">
+                오늘까지 처리할 후속 연락이 없습니다.
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {overview.pendingFollowUps.map((followUp) => (
+                  <Link
+                    className="block rounded-md border border-[var(--border)] bg-white px-3 py-3 hover:border-[var(--border-strong)] hover:bg-[var(--surface-subtle)]"
+                    href={`/customers/${followUp.customerId}`}
+                    key={followUp.id}
+                  >
+                    <div className="truncate text-sm font-semibold text-slate-950">
+                      {followUp.title}
+                    </div>
+                    <div className="mt-1 truncate text-xs text-slate-500">
+                      {followUp.customerName} · 마감 {formatTime(followUp.dueAt)}
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
         <Card className="min-w-0">
-          <CardHeader>
+          <CardHeader className="border-b border-[var(--border)]">
             <CardTitle>최근 상담</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -171,7 +232,7 @@ export default async function DashboardPage() {
               <div className="space-y-3">
                 {overview.recentConsultations.map((consultation) => (
                   <Link
-                    className="block rounded-md border border-[var(--border)] bg-white px-3 py-3 transition-colors hover:border-teal-300 hover:bg-teal-50/50"
+                    className="block rounded-md border border-[var(--border)] bg-white px-3 py-3 transition-colors hover:border-[var(--border-strong)] hover:bg-[var(--surface-subtle)]"
                     href={`/customers/${consultation.customerId}`}
                     key={consultation.id}
                   >
@@ -202,36 +263,7 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
         <Card className="min-w-0">
-          <CardHeader>
-            <CardTitle>후속 연락 필요</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {overview.pendingFollowUps.length === 0 ? (
-              <p className="rounded-md border border-dashed border-[var(--border)] bg-[var(--surface-subtle)] px-4 py-8 text-center text-sm text-slate-600">
-                오늘까지 처리할 후속 연락이 없습니다.
-              </p>
-            ) : (
-              <div className="space-y-3">
-                {overview.pendingFollowUps.map((followUp) => (
-                  <Link
-                    className="block rounded-md border border-[var(--border)] bg-white px-3 py-3 hover:border-teal-300 hover:bg-teal-50/50"
-                    href={`/customers/${followUp.customerId}`}
-                    key={followUp.id}
-                  >
-                    <div className="truncate text-sm font-semibold text-slate-950">
-                      {followUp.title}
-                    </div>
-                    <div className="mt-1 truncate text-xs text-slate-500">
-                      {followUp.customerName} · 마감 {formatTime(followUp.dueAt)}
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-        <Card className="min-w-0">
-          <CardHeader>
+          <CardHeader className="border-b border-[var(--border)]">
             <CardTitle>미확인 알림</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -256,7 +288,7 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
         <Card className="min-w-0">
-          <CardHeader>
+          <CardHeader className="border-b border-[var(--border)]">
             <CardTitle>최근 활동</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">

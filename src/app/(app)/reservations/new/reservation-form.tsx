@@ -44,7 +44,7 @@ export function ReservationForm({
       <label className="space-y-2">
         <span className="text-sm font-semibold text-slate-700">예약명</span>
         <input
-          className="flex h-10 w-full rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm text-slate-950 outline-none transition-colors placeholder:text-[var(--muted-foreground)] focus-visible:border-[var(--ring)] focus-visible:ring-4 focus-visible:ring-teal-500/10"
+          className="form-input w-full"
           name="title"
           placeholder="방문 설치 예약"
           required
@@ -54,7 +54,7 @@ export function ReservationForm({
         <label className="space-y-2">
           <span className="text-sm font-semibold text-slate-700">시작</span>
           <input
-            className="flex h-10 w-full rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm text-slate-950 outline-none transition-colors focus-visible:border-[var(--ring)] focus-visible:ring-4 focus-visible:ring-teal-500/10"
+            className="form-input w-full"
             name="startAt"
             type="datetime-local"
             required
@@ -63,7 +63,7 @@ export function ReservationForm({
         <label className="space-y-2">
           <span className="text-sm font-semibold text-slate-700">종료</span>
           <input
-            className="flex h-10 w-full rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm text-slate-950 outline-none transition-colors focus-visible:border-[var(--ring)] focus-visible:ring-4 focus-visible:ring-teal-500/10"
+            className="form-input w-full"
             name="endAt"
             type="datetime-local"
             required
@@ -83,7 +83,7 @@ export function ReservationForm({
       <label className="space-y-2">
         <span className="text-sm font-semibold text-slate-700">장소</span>
         <input
-          className="flex h-10 w-full rounded-md border border-[var(--border)] bg-white px-3 py-2 text-sm text-slate-950 outline-none transition-colors placeholder:text-[var(--muted-foreground)] focus-visible:border-[var(--ring)] focus-visible:ring-4 focus-visible:ring-teal-500/10"
+          className="form-input w-full"
           name="location"
           placeholder="서울 강남구"
         />
@@ -96,10 +96,19 @@ export function ReservationForm({
           placeholder="방문 전 확인할 내용"
         />
       </label>
-      <Button disabled={isPending || customers.length === 0} type="submit">
-        <Save aria-hidden="true" className="h-4 w-4" />
-        {isPending ? "저장 중" : "저장"}
-      </Button>
+      <div className="flex flex-col gap-2 border-t border-[var(--border)] pt-5 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-sm text-slate-500">
+          저장 후 예약 상세에서 일정, 장소, 처리 상태를 조정할 수 있습니다.
+        </p>
+        <Button
+          className="sm:min-w-28"
+          disabled={isPending || customers.length === 0}
+          type="submit"
+        >
+          <Save aria-hidden="true" className="h-4 w-4" />
+          {isPending ? "저장 중" : "저장"}
+        </Button>
+      </div>
     </form>
   );
 }

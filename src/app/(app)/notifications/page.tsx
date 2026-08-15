@@ -4,7 +4,7 @@ import { Bell, CheckCheck, Inbox } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { requirePageUser } from "@/server/auth/session";
+import { requirePageTenantUser } from "@/server/auth/session";
 import {
   markAllNotificationsReadAction,
   markNotificationReadAction
@@ -31,18 +31,15 @@ function formatDateTime(value: string) {
 export default async function NotificationsPage({
   searchParams
 }: NotificationsPageProps) {
-  const user = await requirePageUser();
-  if (!user.organizationId) {
-    throw new Error("사업장 권한을 확인할 수 없습니다.");
-  }
+  const user = await requirePageTenantUser();
 
   const params = await searchParams;
   const parsed = listNotificationsSchema.parse({
     unreadOnly: firstParam(params.unreadOnly)
   });
   const { notifications, total, unreadCount } = await listNotifications({
-    organizationId: BigInt(user.organizationId),
-    userId: BigInt(user.id),
+    organizationId: user.organizationId,
+    userId: user.id,
     ...parsed
   });
 

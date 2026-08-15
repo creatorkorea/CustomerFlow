@@ -28,19 +28,19 @@ export function AppSidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="relative hidden w-60 shrink-0 border-r border-[var(--border)] bg-white md:block">
+    <aside className="relative hidden w-64 shrink-0 border-r border-[var(--border)] bg-white md:block">
       <div className="flex h-16 items-center border-b border-[var(--border)] px-5">
         <Link
-          className="flex items-center gap-2 text-lg font-bold tracking-tight text-slate-950"
+          className="flex items-center gap-2.5 text-lg font-bold tracking-tight text-slate-950"
           href="/dashboard"
         >
-          <span className="flex h-8 w-8 items-center justify-center rounded-md bg-[var(--primary)] text-sm font-black text-white">
+          <span className="flex h-8 w-8 items-center justify-center rounded-md bg-slate-950 text-sm font-black text-white shadow-[inset_0_-8px_18px_rgb(0_111_106/0.45)]">
             C
           </span>
           CustomerFlow
         </Link>
       </div>
-      <nav className="space-y-1 p-3">
+      <nav className="space-y-1.5 p-3">
         {navigation.map((item) => {
           const Icon = item.icon;
           const isActive =
@@ -50,8 +50,8 @@ export function AppSidebar() {
             <Link
               className={`flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-semibold transition-colors ${
                 isActive
-                  ? "border-l-2 border-[var(--primary)] bg-teal-50 text-teal-800"
-                  : "text-slate-600 hover:bg-slate-50 hover:text-slate-950"
+                  ? "bg-[var(--primary)] text-white shadow-[0_1px_2px_rgb(15_23_42/0.08)]"
+                  : "text-slate-600 hover:bg-[var(--muted)] hover:text-slate-950"
               }`}
               href={item.href}
               key={item.href}
@@ -62,9 +62,9 @@ export function AppSidebar() {
           );
         })}
       </nav>
-      <div className="absolute bottom-4 mx-3 hidden w-[13.5rem] rounded-lg border border-[var(--border)] bg-[var(--surface-subtle)] p-4 text-sm text-slate-600 xl:block">
-        <div className="font-semibold text-slate-950">MVP 플랜</div>
-        <div className="mt-1">고객, 상담, 예약 흐름 구축 중</div>
+      <div className="absolute bottom-4 mx-3 hidden w-[14.5rem] rounded-lg border border-[var(--border)] bg-[var(--surface-subtle)] p-4 text-sm text-slate-600 xl:block">
+        <div className="font-semibold text-slate-950">오늘의 운영 흐름</div>
+        <div className="mt-1 leading-5">고객, 상담, 예약, 후속관리를 한 흐름으로 관리합니다.</div>
       </div>
     </aside>
   );
