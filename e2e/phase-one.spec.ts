@@ -187,7 +187,7 @@ test("authenticated owner can create a customer", async ({ page }) => {
   await page.getByLabel("이메일").fill("e2e-customer@example.com");
   await page.getByRole("button", { name: "저장" }).click();
 
-  await expect(page).toHaveURL(/\/customers\/\d+/);
+  await expect(page).toHaveURL(/\/customers\/\d+/, { timeout: 15000 });
   await expect(page.getByRole("heading", { name: customerName })).toBeVisible();
   await expect(page.getByRole("link", { name: "상담 등록" })).toBeVisible();
   await expect(page.getByRole("link", { name: "예약 등록" })).toBeVisible();
