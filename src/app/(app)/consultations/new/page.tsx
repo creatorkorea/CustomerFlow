@@ -3,7 +3,7 @@ import { ArrowLeft } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { requireOrganizationId } from "@/server/auth/session";
+import { requirePageOrganizationId } from "@/server/auth/session";
 import { listCustomerPickerOptions } from "@/server/customers/picker-options";
 import { ConsultationForm } from "./consultation-form";
 
@@ -18,7 +18,7 @@ function firstParam(value: string | string[] | undefined) {
 export default async function NewConsultationPage({
   searchParams
 }: NewConsultationPageProps) {
-  const organizationId = await requireOrganizationId();
+  const organizationId = await requirePageOrganizationId();
   const params = await searchParams;
   const defaultCustomerId = firstParam(params.customerId);
   const customers = await listCustomerPickerOptions({

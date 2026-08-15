@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Pagination } from "@/components/ui/pagination";
-import { requireOrganizationId } from "@/server/auth/session";
+import { requirePageOrganizationId } from "@/server/auth/session";
 import { listCustomerPickerOptions } from "@/server/customers/picker-options";
 import { updateReservationStatusAction } from "@/server/reservations/actions";
 import { listReservations } from "@/server/reservations/service";
@@ -47,7 +47,7 @@ function formatDateTime(value: string) {
 export default async function ReservationsPage({
   searchParams
 }: ReservationsPageProps) {
-  const organizationId = await requireOrganizationId();
+  const organizationId = await requirePageOrganizationId();
   const params = await searchParams;
   const parsed = listReservationsSchema.parse({
     customerId: firstParam(params.customerId),

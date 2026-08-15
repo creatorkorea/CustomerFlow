@@ -8,7 +8,7 @@ import {
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { requireOrganizationId } from "@/server/auth/session";
+import { requirePageOrganizationId } from "@/server/auth/session";
 import { getCustomer } from "@/server/customers/service";
 import {
   listCustomerTimeline,
@@ -59,7 +59,7 @@ export default async function CustomerDetailPage({
   params,
   searchParams
 }: CustomerDetailPageProps) {
-  const organizationId = await requireOrganizationId();
+  const organizationId = await requirePageOrganizationId();
   const { id } = await params;
   const timelineType = parseTimelineType(firstParam((await searchParams).timelineType));
   const customer = await getCustomer({

@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Pagination } from "@/components/ui/pagination";
-import { requireOrganizationId } from "@/server/auth/session";
+import { requirePageOrganizationId } from "@/server/auth/session";
 import { listCustomerPickerOptions } from "@/server/customers/picker-options";
 import { updateFollowUpStatusAction } from "@/server/follow-ups/actions";
 import { listFollowUps } from "@/server/follow-ups/service";
@@ -41,7 +41,7 @@ function formatDateTime(value: string) {
 }
 
 export default async function FollowUpsPage({ searchParams }: FollowUpsPageProps) {
-  const organizationId = await requireOrganizationId();
+  const organizationId = await requirePageOrganizationId();
   const params = await searchParams;
   const parsed = listFollowUpsSchema.parse({
     customerId: firstParam(params.customerId),

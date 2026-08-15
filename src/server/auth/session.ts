@@ -38,3 +38,13 @@ export async function requirePageUser() {
 
   return user;
 }
+
+export async function requirePageOrganizationId() {
+  const user = await requirePageUser();
+
+  if (!user.organizationId) {
+    redirect("/login");
+  }
+
+  return BigInt(user.organizationId);
+}

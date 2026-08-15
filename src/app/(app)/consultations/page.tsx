@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Pagination } from "@/components/ui/pagination";
-import { requireOrganizationId } from "@/server/auth/session";
+import { requirePageOrganizationId } from "@/server/auth/session";
 import { listConsultations } from "@/server/consultations/service";
 import { listConsultationsSchema } from "@/server/consultations/validation";
 import { listCustomerPickerOptions } from "@/server/customers/picker-options";
@@ -51,7 +51,7 @@ function firstParam(value: string | string[] | undefined) {
 export default async function ConsultationsPage({
   searchParams
 }: ConsultationsPageProps) {
-  const organizationId = await requireOrganizationId();
+  const organizationId = await requirePageOrganizationId();
   const params = await searchParams;
   const parsed = listConsultationsSchema.parse({
     customerId: firstParam(params.customerId),

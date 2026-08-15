@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Pagination } from "@/components/ui/pagination";
-import { requireOrganizationId } from "@/server/auth/session";
+import { requirePageOrganizationId } from "@/server/auth/session";
 import { listCustomers } from "@/server/customers/service";
 import { listCustomersSchema } from "@/server/customers/validation";
 import { listTags } from "@/server/tags/service";
@@ -40,7 +40,7 @@ function firstParam(value: string | string[] | undefined) {
 export default async function CustomersPage({
   searchParams
 }: CustomersPageProps) {
-  const organizationId = await requireOrganizationId();
+  const organizationId = await requirePageOrganizationId();
   const params = await searchParams;
   const parsed = listCustomersSchema.parse({
     search: firstParam(params.search),

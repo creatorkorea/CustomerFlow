@@ -3,12 +3,12 @@ import { ArrowLeft } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { requireOrganizationId } from "@/server/auth/session";
+import { requirePageOrganizationId } from "@/server/auth/session";
 import { listTags } from "@/server/tags/service";
 import { CustomerForm } from "./customer-form";
 
 export default async function NewCustomerPage() {
-  const organizationId = await requireOrganizationId();
+  const organizationId = await requirePageOrganizationId();
   const { tags } = await listTags({
     organizationId,
     pageSize: 100

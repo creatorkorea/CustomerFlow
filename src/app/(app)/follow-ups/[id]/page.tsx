@@ -5,7 +5,7 @@ import { ArrowLeft, Save } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { requireOrganizationId } from "@/server/auth/session";
+import { requirePageOrganizationId } from "@/server/auth/session";
 import { updateFollowUpAction } from "@/server/follow-ups/actions";
 import { getFollowUp } from "@/server/follow-ups/service";
 import { AppError } from "@/server/shared/http-errors";
@@ -62,7 +62,7 @@ export default async function FollowUpDetailPage({
     notFound();
   }
 
-  const organizationId = await requireOrganizationId();
+  const organizationId = await requirePageOrganizationId();
   let followUp: Awaited<ReturnType<typeof getFollowUp>>;
 
   try {

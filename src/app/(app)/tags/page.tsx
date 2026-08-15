@@ -3,11 +3,11 @@ import { Plus, Tags } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { requireOrganizationId } from "@/server/auth/session";
+import { requirePageOrganizationId } from "@/server/auth/session";
 import { listTags } from "@/server/tags/service";
 
 export default async function TagsPage() {
-  const organizationId = await requireOrganizationId();
+  const organizationId = await requirePageOrganizationId();
   const { tags, total } = await listTags({
     organizationId,
     pageSize: 100
